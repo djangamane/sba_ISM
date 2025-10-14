@@ -1,0 +1,41 @@
+# General
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment files
+.env
+*.env
+backend/.env
+mobile/spiritual_bible_chat/.env
+
+# Node / TypeScript
+node_modules/
+backend/node_modules/
+backend/dist/
+npm-debug.log*
+
+# Flutter / Dart
+mobile/spiritual_bible_chat/.dart_tool/
+mobile/spiritual_bible_chat/.flutter-plugins
+mobile/spiritual_bible_chat/.flutter-plugins-dependencies
+mobile/spiritual_bible_chat/.packages
+mobile/spiritual_bible_chat/build/
+mobile/spiritual_bible_chat/ios/Flutter/Flutter.framework
+mobile/spiritual_bible_chat/ios/Flutter/Flutter.podspec
+mobile/spiritual_bible_chat/ios/Flutter/Generated.xcconfig
+mobile/spiritual_bible_chat/ios/ServiceDefinitions.json
+mobile/spiritual_bible_chat/ios/Runner/GeneratedPluginRegistrant.*
+mobile/spiritual_bible_chat/macos/Flutter/GeneratedPluginRegistrant.swift
+mobile/spiritual_bible_chat/linux/flutter/ephemeral/
+mobile/spiritual_bible_chat/windows/flutter/ephemeral/
+mobile/spiritual_bible_chat/web/.dart_tool/
+
+# Coverage / Reports
+coverage/
+lcov.info
+
+# Misc
+*.lock
+*.log
