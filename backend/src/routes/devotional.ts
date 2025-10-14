@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { logUsage } from '../services/usageLogger';
 import { ensureDevotionalAccess } from '../services/entitlements';
@@ -23,7 +23,7 @@ const DEVOTIONAL_INSTRUCTIONS = `Compose a 180-220 word devotional reflection. S
 - Provide one actionable practice or affirmation for the reader today.
 - Close with a short, hopeful encouragement (no generic sign-off).`;
 
-router.post('/', async (req: AuthenticatedRequest, res, next) => {
+router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const { verseText, verseReference, persona } = (req.body ?? {}) as DevotionalRequestBody;
   const userId = req.userId;
 

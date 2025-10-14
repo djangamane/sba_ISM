@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import env from '../config/env';
 import { processRevenueCatWebhook } from '../services/revenuecat';
 
 const router = Router();
 
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', async (req: Request, res: Response) => {
   if (!env.revenueCatWebhookSecret) {
     return res.status(501).json({ error: 'RevenueCat webhook secret not configured.' });
   }

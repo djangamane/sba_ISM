@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import env from '../config/env';
 import { getOpenAiClient, isOpenAiConfigured } from '../services/openai';
@@ -12,7 +12,7 @@ const sleep = (ms: number) =>
     setTimeout(resolve, ms);
   });
 
-router.post('/', async (req: AuthenticatedRequest, res, next) => {
+router.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const { message, threadId } = req.body ?? {};
   const userId = req.userId;
 
