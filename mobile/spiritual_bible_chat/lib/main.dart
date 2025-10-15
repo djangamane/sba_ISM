@@ -9,12 +9,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_gate.dart';
 import 'models/onboarding_profile.dart';
+import 'models/premium_state.dart';
 import 'models/streak_state.dart';
 import 'repositories/profile_repository.dart';
 import 'repositories/streak_repository.dart';
 import 'screens/devotional/devotional_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 import 'services/notification_service.dart';
+import 'services/premium_service.dart';
 import 'services/preferences_service.dart';
 import 'utils/api_base.dart';
 import 'utils/reminders.dart';
@@ -132,20 +134,34 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
   OnboardingProfile? _profile;
   StreakState _streak = StreakState.initial();
   bool _isLoading = true;
+  PremiumState _premiumState = PremiumState.initial();
   DateTime? _nextReminder;
   final GlobalKey<_AppShellState> _appShellKey = GlobalKey<_AppShellState>();
   StreamSubscription<String>? _notificationSubscription;
   StreamSubscription<AuthState>? _authSubscription;
+  VoidCallback? _premiumListener;
 
   final SupabaseClient _supabase = Supabase.instance.client;
   late final ProfileRepository _profileRepository =
       ProfileRepository(_supabase);
   late final StreakRepository _streakRepository = StreakRepository(_supabase);
   final PaywallService _paywallService = PaywallService();
+  final PremiumService _premiumService = PremiumService.instance;
 
   @override
   void initState() {
     super.initState();
+    _premiumService.configure();
+    _premiumListener = () {
+      final premium = _premiumService.state.value;
+      if (mounted) {
+        setState(() {
+          _premiumState = premium;
+        });
+      }
+    };
+    _premiumService.state.addListener(_premiumListener!);
+
     _bootstrap();
     _notificationSubscription =
         NotificationService.instance.taps.listen(_handleNotificationPayload);
@@ -154,18 +170,26 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         _handleNotificationPayload(payload);
       }
     });
-    _authSubscription = _supabase.auth.onAuthStateChange.listen((event) async {
-      final userId = event.session?.user.id;
-      if (userId != null) {
-        await _syncFromSupabase(userId);
-      }
-    });
+    _authSubscription = _supabase.auth.onAuthStateChange.listen(
+      (event) async {
+        final userId = event.session?.user.id;
+        if (userId != null) {
+          await _syncFromSupabase(userId);
+          await _premiumService.logIn(userId);
+        } else {
+          await _premiumService.logOut();
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
     _notificationSubscription?.cancel();
     _authSubscription?.cancel();
+    if (_premiumListener != null) {
+      _premiumService.state.removeListener(_premiumListener!);
+    }
     super.dispose();
   }
 
@@ -194,6 +218,9 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     final userId = _supabase.auth.currentUser?.id;
     if (userId != null) {
       await _syncFromSupabase(userId);
+      await _premiumService.logIn(userId);
+    } else {
+      await _premiumService.refreshStatus();
     }
   }
 
@@ -225,6 +252,8 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     } catch (error, stackTrace) {
       debugPrint('Supabase sync failed: $error\n$stackTrace');
     }
+
+    await _premiumService.refreshStatus();
   }
 
   Future<void> _handleProfileCompleted(OnboardingProfile profile) async {
@@ -266,8 +295,17 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       builder: (dialogContext) => PaywallDialog(
         message: message,
         onUpgrade: () async {
-          await _paywallService.requestDemoUpgrade();
+          bool upgraded = false;
+          try {
+            upgraded = await _premiumService.startPurchaseFlow();
+          } catch (error) {
+            debugPrint('Purchase flow failed: $error');
+          }
+          if (!upgraded) {
+            await _paywallService.requestDemoUpgrade();
+          }
           await _refreshFromSupabase();
+          await _premiumService.refreshStatus();
         },
       ),
     );
@@ -404,15 +442,18 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         onRetakeRequested: _handleRetakeRequested,
         onSignOut: () async {
           await Supabase.instance.client.auth.signOut();
+          await _premiumService.logOut();
           if (mounted) {
             setState(() {
               _profile = null;
+              _premiumState = PremiumState.initial();
             });
           }
           AuthGate.continueAsGuest(context);
         },
         onSignInRequested: () => AuthGate.requestSignIn(context),
         onShowPaywall: _handlePaywall,
+        premium: _premiumState,
       );
     }
 
@@ -443,6 +484,7 @@ class _AppShell extends StatefulWidget {
     required this.onSignOut,
     required this.onSignInRequested,
     required this.onShowPaywall,
+    required this.premium,
   });
 
   final OnboardingProfile profile;
@@ -457,6 +499,7 @@ class _AppShell extends StatefulWidget {
   final VoidCallback onSignInRequested;
   final Future<void> Function(BuildContext context, String message)
       onShowPaywall;
+  final PremiumState premium;
 
   @override
   State<_AppShell> createState() => _AppShellState();
@@ -651,6 +694,7 @@ class _AppShellState extends State<_AppShell> {
           isSignedIn: isSignedIn,
           userEmail: userEmail,
           onShowPaywall: widget.onShowPaywall,
+          premium: widget.premium,
         ),
       ),
     ];
@@ -1468,6 +1512,7 @@ class _ProfileScreen extends StatelessWidget {
     required this.isSignedIn,
     required this.userEmail,
     required this.onShowPaywall,
+    required this.premium,
   });
 
   final OnboardingProfile profile;
@@ -1479,6 +1524,7 @@ class _ProfileScreen extends StatelessWidget {
   final bool isSignedIn;
   final String? userEmail;
   final Future<void> Function(BuildContext, String) onShowPaywall;
+  final PremiumState premium;
 
   @override
   Widget build(BuildContext context) {
@@ -1488,7 +1534,7 @@ class _ProfileScreen extends StatelessWidget {
         ? email.substring(0, 1).toUpperCase()
         : 'SJ';
     final title = isSignedIn ? (email ?? 'Signed in user') : 'Guest Pilgrim';
-    final subtitle = profile.isPremium
+    final subtitle = premium.isPremium
         ? 'Premium plan active.'
         : (isSignedIn
             ? 'Signed in via Supabase.'
@@ -1596,12 +1642,12 @@ class _ProfileScreen extends StatelessWidget {
           _ProfileSettingTile(
             icon: Icons.workspace_premium_outlined,
             title:
-                profile.isPremium ? 'Premium unlocked' : 'Upgrade to Premium',
-            subtitle: profile.isPremium
+                premium.isPremium ? 'Premium unlocked' : 'Upgrade to Premium',
+            subtitle: premium.isPremium
                 ? 'Thank you for supporting the mission.'
                 : 'Unlock unlimited chat and devotional content.',
             isDestructive: false,
-            onTap: profile.isPremium
+            onTap: premium.isPremium
                 ? null
                 : () => onShowPaywall(
                       context,

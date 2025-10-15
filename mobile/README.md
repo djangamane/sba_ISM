@@ -19,7 +19,7 @@ flutter run -d chrome \
 ```
 
 To run with a specific device, pass `-d <device-id>`; list available devices via `flutter devices`.
-Ensure the backend dev server is running at `http://localhost:4000` (or `10.0.2.2` from Android emulators) so the chat screen can reach the OpenAI assistant.
+Ensure the backend dev server is running at `http://localhost:4000` (or `10.0.2.2` from Android emulators) so the chat screen can reach the OpenAI assistant. When targeting the hosted backend, set `API_BASE_URL` in `.env` (or pass `--dart-define=API_BASE_URL=https://sba-ism.onrender.com`).
 
 ### Notifications
 - Android: Accept the runtime notification permission prompt (Android 13+). The manifest already declares `POST_NOTIFICATIONS`.
@@ -39,7 +39,7 @@ Ensure the backend dev server is running at `http://localhost:4000` (or `10.0.2.
 ## Supabase Setup
 1. Create a Supabase project and capture the project URL + anon (publishable) key.
 2. Run the SQL migration provided earlier to create the `profiles`, `streaks`, `devotional_cache`, and `reminder_events` tables with row-level security policies.
-3. Copy `.env.example` to `.env` inside `mobile/spiritual_bible_chat/` and populate `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+3. Copy `.env.example` to `.env` inside `mobile/spiritual_bible_chat/` and populate `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUECAT_PUBLIC_API_KEY`, and `API_BASE_URL`.
 4. Create user accounts via Supabase Auth or the in-app “Create account” button. A “Continue as guest” option remains for local-only testing.
 
 ## Next Mobile Milestones

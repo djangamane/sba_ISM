@@ -36,12 +36,20 @@ class PaywallDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            await onUpgrade();
-            if (context.mounted) {
-              Navigator.of(context).pop(true);
+            try {
+              await onUpgrade();
+              if (context.mounted) {
+                Navigator.of(context).pop(true);
+              }
+            } catch (error) {
+              if (!context.mounted) return;
+              Navigator.of(context).pop(false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(error.toString())),
+              );
             }
           },
-          child: const Text('Start demo'),
+          child: const Text('Upgrade now'),
         ),
       ],
     );
