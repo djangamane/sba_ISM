@@ -23,5 +23,14 @@ flutter precache --web
 
 echo "Building Flutter web app..."
 cd mobile/spiritual_bible_chat
+
+# Generate .env file for build-time assets (values may be empty if not provided).
+cat <<EOF > .env
+SUPABASE_URL=${SUPABASE_URL:-}
+SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+API_BASE_URL=${API_BASE_URL:-}
+STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+EOF
+
 flutter pub get
 flutter build web --release
