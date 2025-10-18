@@ -98,7 +98,19 @@ Future<void> main() async {
   if (!kIsWeb) {
     await dotenv.load(fileName: '.env');
   } else {
-    dotenv.testLoad(fileInput: '');
+    final envMap = const {
+      'SUPABASE_URL': String.fromEnvironment('SUPABASE_URL', defaultValue: ''),
+      'SUPABASE_ANON_KEY': String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: ''),
+      'API_BASE_URL': String.fromEnvironment('API_BASE_URL', defaultValue: ''),
+      'STRIPE_PUBLISHABLE_KEY': String.fromEnvironment('STRIPE_PUBLISHABLE_KEY', defaultValue: ''),
+    };
+    final buffer = StringBuffer();
+    envMap.forEach((key, value) {
+      if (value.isNotEmpty) {
+        buffer.writeln('$key=$value');
+      }
+    });
+    dotenv.testLoad(fileInput: buffer.toString());
   }
   final supabaseUrl = dotenv.maybeGet('SUPABASE_URL') ??
       const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
