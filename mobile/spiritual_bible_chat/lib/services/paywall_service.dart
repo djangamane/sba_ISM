@@ -78,4 +78,24 @@ class PaywallService {
     } catch (_) {}
     throw Exception(message);
   }
+
+  Future<void> logPaywallEvent(String event,
+      {String? trigger, bool swallowErrors = true}) async {
+    final uri = Uri.parse('${apiBaseUrl()}/api/v1/paywall/log');
+    try {
+      await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          ...await authHeaders(),
+        },
+        body: jsonEncode({
+          'event': event,
+          if (trigger != null) 'trigger': trigger,
+        }),
+      );
+    } catch (error) {
+      if (!swallowErrors) rethrow;
+    }
+  }
 }

@@ -131,6 +131,7 @@ interface StripeSubscriptionState {
   currentPeriodEnd?: number | null;
   trialEnd?: number | null;
   customerId?: string | null;
+  planId?: string | null;
 }
 
 export const applyStripeSubscription = async (userId: string, state: StripeSubscriptionState) => {
@@ -157,6 +158,7 @@ export const applyStripeSubscription = async (userId: string, state: StripeSubsc
         premium_trial_ends_at: state.isActive ? trialEndsIso : null,
         premium_source: state.isActive ? 'stripe' : null,
         stripe_customer_id: state.customerId ?? null,
+        premium_plan_id: state.planId ?? null,
       },
       { onConflict: 'user_id' }
     );

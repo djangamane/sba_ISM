@@ -142,6 +142,11 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Text(
+                'After creating an account, check your email for a confirmation link before signing in.',
+                style: theme.textTheme.bodySmall,
+              ),
               const Spacer(),
               Center(
                 child: TextButton(

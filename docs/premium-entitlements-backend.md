@@ -38,6 +38,9 @@
 - Creates a Stripe Billing Portal session and returns `{ "portalUrl": "https://..." }` so subscribers can manage their plan.
 - Requires Supabase JWT and an existing `stripe_customer_id` on the profile.
 
+### 1.4 `/api/v1/paywall/log` (POST)
+- Analytics hook for logging paywall events. Expects `{ "event": "view" | "purchase_success" | "purchase_cancelled", "trigger": "..." }` and records an entry in `usage_logs` (requires Supabase JWT).
+
 ## 2. Stripe Integration
 - Required environment variables: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL`, `STRIPE_SUCCESS_URL`, `STRIPE_CANCEL_URL`, `STRIPE_WEBHOOK_SECRET` (plus optional `STRIPE_PORTAL_RETURN_URL`).
 
@@ -51,6 +54,7 @@
     - `premium_source` (`stripe`).
     - `premium_trial_ends_at`.
     - `stripe_customer_id`.
+    - `premium_plan_id` (e.g., `premium_monthly`, `premium_annual`).
   - Log events to `premium_events` table for auditing.
 - Idempotent processing via `event_id` (store processed IDs).
 
@@ -66,7 +70,8 @@
 alter table public.profiles
   add column if not exists premium_source text check (premium_source in ('stripe', 'demo')) default null,
   add column if not exists premium_trial_ends_at timestamptz,
-  add column if not exists stripe_customer_id text;
+  add column if not exists stripe_customer_id text,
+  add column if not exists premium_plan_id text;
 
 create table if not exists public.premium_events (
   id uuid primary key default gen_random_uuid(),

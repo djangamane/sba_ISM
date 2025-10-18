@@ -20,6 +20,7 @@
 - Progress tab: `Streak booster` CTA opens full paywall.
 - Settings/Profile: static list tile `Manage Subscription` that navigates to paywall when not premium, and to subscription settings when premium.
 - Settings/Profile: static list tile `Manage Subscription` that launches the Stripe billing portal when premium is active.
+- Stripe success should deep-link to `/payment/success`; cancel to `/payment/canceled` so users see clear messaging after leaving Checkout.
 - Deep links: support `sba://paywall` to open `PaywallScaffold` with optional query `source`.
 
 ## 3. Visual & Motion Details
@@ -57,6 +58,7 @@
 - When full screen shown: log `paywall_view` with `presentation=full`.
 - CTA tap: `paywall_cta_tap` with `plan`, `trial_eligible`.
 - Restoration attempt: `paywall_restore`.
+- Log `purchase_success` and `purchase_cancelled` after webhook-driven refresh to keep Stripe + Supabase metrics aligned.
 
 ## 8. Acceptance Tests
 - Widget tests ensuring:

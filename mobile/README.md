@@ -32,7 +32,7 @@ Ensure the backend dev server is running at `http://localhost:4000` (or `10.0.2.
    - `STRIPE_PUBLISHABLE_KEY`
     - `STRIPE_CHECKOUT_MONTHLY` (optional payment link fallback)
     - `STRIPE_CHECKOUT_ANNUAL` (optional payment link fallback)
-5. After deploy, verify the hosted site on desktop and mobile browsers (Lighthouse, responsive layouts) and confirm premium gating hits the production backend.
+5. After deploy, verify the hosted site on desktop and mobile browsers (Lighthouse, responsive layouts) and confirm premium gating hits the production backend. Stripe should redirect back to `/payment/success`; cancelled flows land on `/payment/canceled`.
 
 ### Notifications
 - Android: Accept the runtime notification permission prompt (Android 13+). The manifest already declares `POST_NOTIFICATIONS`.

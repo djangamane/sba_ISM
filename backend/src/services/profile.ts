@@ -22,6 +22,8 @@ export interface FullProfileResponse {
       is_trial: boolean;
       trial_ends_at: string | null;
     };
+    plan_id: string | null;
+    customer_id: string | null;
   };
 }
 
@@ -41,7 +43,7 @@ export const getFullProfile = async (userId: string): Promise<FullProfileRespons
     supabaseAdmin
       .from('profiles')
       .select(
-        'goal,familiarity,content_preferences,reminder_slot,wants_streaks,next_reminder_at,is_premium,premium_expires_at,premium_trial_ends_at,premium_source'
+        'goal,familiarity,content_preferences,reminder_slot,wants_streaks,next_reminder_at,is_premium,premium_expires_at,premium_trial_ends_at,premium_source,premium_plan_id,stripe_customer_id'
       )
       .eq('user_id', userId)
       .maybeSingle(),
@@ -102,6 +104,14 @@ export const getFullProfile = async (userId: string): Promise<FullProfileRespons
     profileData && typeof profileData.premium_source === 'string'
       ? profileData.premium_source
       : null;
+  const premiumPlanId =
+    profileData && typeof profileData.premium_plan_id === 'string'
+      ? profileData.premium_plan_id
+      : null;
+  const stripeCustomerId =
+    profileData && typeof profileData.stripe_customer_id === 'string'
+      ? profileData.stripe_customer_id
+      : null;
 
   const expiresTimestamp = premiumExpiresAt ? Date.parse(premiumExpiresAt) : undefined;
   const isActive =
@@ -122,6 +132,8 @@ export const getFullProfile = async (userId: string): Promise<FullProfileRespons
         is_trial: trialIsActive,
         trial_ends_at: premiumTrialEndsAt,
       },
+      plan_id: premiumPlanId,
+      customer_id: stripeCustomerId,
     },
   };
 };

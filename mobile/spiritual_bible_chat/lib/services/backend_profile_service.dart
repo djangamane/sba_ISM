@@ -38,6 +38,8 @@ class BackendProfileService {
       isTrial: trial?['is_trial'] == true,
       trialEndsAt: _parseDateTime(trial?['trial_ends_at']),
       isLoading: false,
+      planId: premium?['plan_id'] as String?,
+      customerId: premium?['customer_id'] as String?,
     );
   }
 

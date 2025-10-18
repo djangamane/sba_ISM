@@ -146,6 +146,7 @@ const applySubscriptionFromStripe = async (subscription: any, userId: string | n
     currentPeriodEnd: subscription.current_period_end ?? null,
     trialEnd: subscription.trial_end ?? null,
     customerId: toStripeId(subscription.customer),
+    planId: subscription.metadata?.plan_id ?? null,
   });
 };
 
@@ -166,6 +167,9 @@ const handleCheckoutSessionCompleted = async (event: any) => {
   }
 
   const subscription = await stripeClient.subscriptions.retrieve(subscriptionId);
+  if (subscription.metadata?.plan_id == null && session.metadata?.plan_id) {
+    subscription.metadata.plan_id = session.metadata.plan_id;
+  }
   await applySubscriptionFromStripe(subscription, userId);
   await logStripeEvent(userId, event);
 };

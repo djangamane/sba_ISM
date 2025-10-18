@@ -6,6 +6,8 @@ class PremiumState {
     required this.isTrial,
     required this.trialEndsAt,
     required this.isLoading,
+    this.planId,
+    this.customerId,
     this.errorMessage,
   });
 
@@ -15,6 +17,8 @@ class PremiumState {
   final bool isTrial;
   final DateTime? trialEndsAt;
   final bool isLoading;
+  final String? planId;
+  final String? customerId;
   final String? errorMessage;
 
   factory PremiumState.initial() => const PremiumState(
@@ -24,6 +28,8 @@ class PremiumState {
         isTrial: false,
         trialEndsAt: null,
         isLoading: false,
+        planId: null,
+        customerId: null,
       );
 
   PremiumState copyWith({
@@ -33,6 +39,8 @@ class PremiumState {
     bool? isTrial,
     DateTime? trialEndsAt,
     bool? isLoading,
+    String? planId,
+    String? customerId,
     Object? errorMessage = _sentinel,
   }) {
     return PremiumState(
@@ -42,6 +50,8 @@ class PremiumState {
       isTrial: isTrial ?? this.isTrial,
       trialEndsAt: trialEndsAt ?? this.trialEndsAt,
       isLoading: isLoading ?? this.isLoading,
+      planId: planId ?? this.planId,
+      customerId: customerId ?? this.customerId,
       errorMessage: identical(errorMessage, _sentinel)
           ? this.errorMessage
           : errorMessage as String?,

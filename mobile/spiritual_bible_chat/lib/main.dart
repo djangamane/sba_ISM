@@ -306,6 +306,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
 
   Future<void> _handlePaywall(BuildContext context, String message) async {
     if (!context.mounted) return;
+    await _paywallService.logPaywallEvent('view', trigger: message);
     final previousPremium = _premiumService.state.value.isPremium;
     final upgradeAttempted = await showDialog<bool>(
       context: context,
@@ -344,12 +345,17 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
           content: Text('Premium unlocked! Enjoy unlimited access.'),
         ),
       );
+      await _paywallService.logPaywallEvent(
+        'purchase_success',
+        trigger: _premiumService.state.value.planId ?? 'unknown',
+      );
     } else if (upgradeAttempted == true && !nowPremium) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Complete checkout in the newly opened window, then return to continue.'),
         ),
       );
+      await _paywallService.logPaywallEvent('purchase_cancelled');
     }
   }
 
@@ -514,8 +520,66 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       themeMode: ThemeMode.system,
       theme: theme,
       darkTheme: darkTheme,
+      routes: {
+        '/payment/success': (_) => const _CheckoutResultScreen(
+              title: 'Thank you!',
+              message:
+                  'Payment received. You now have unlimited chats and devotionals. Return to the app to continue your journey.',
+            ),
+        '/payment/canceled': (_) => const _CheckoutResultScreen(
+              title: 'Checkout canceled',
+              message:
+                  'No worries—your card was not charged. You can retry the upgrade whenever you’re ready.',
+            ),
+      },
       home: AuthGate(
         child: content,
+      ),
+    );
+  }
+}
+
+class _CheckoutResultScreen extends StatelessWidget {
+  const _CheckoutResultScreen({required this.title, required this.message});
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.arrow_back),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                style: theme.textTheme.bodyLarge,
+              ),
+              const Spacer(),
+              FilledButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: const Text('Return to app'),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1670,6 +1734,13 @@ class _ProfileScreen extends StatelessWidget {
               await onRetakeRequested();
             },
           ),
+          if (premium.isPremium) ...[
+            _PremiumSummaryCard(
+              premium: premium,
+              onManageSubscription: onManageSubscription,
+            ),
+            const SizedBox(height: 24),
+          ],
           _ProfileSettingTile(
             icon: Icons.notifications_active_outlined,
             title: 'Notification schedule',
@@ -1710,15 +1781,6 @@ class _ProfileScreen extends StatelessWidget {
                       'Upgrade to experience unlimited guidance and devotionals.',
                     ),
           ),
-          if (premium.isPremium)
-            _ProfileSettingTile(
-              icon: Icons.manage_accounts_outlined,
-              title: 'Manage subscription',
-              subtitle: 'Update billing or cancel anytime.',
-              onTap: () async {
-                await onManageSubscription();
-              },
-            ),
           const Divider(height: 32),
           const _ProfileSettingTile(
             icon: Icons.description_outlined,
@@ -1788,6 +1850,89 @@ class _ProfileSettingTile extends StatelessWidget {
               SnackBar(content: Text('$title is on the roadmap.')),
             );
           },
+    );
+  }
+}
+
+class _PremiumSummaryCard extends StatelessWidget {
+  const _PremiumSummaryCard({required this.premium, required this.onManageSubscription});
+
+  final PremiumState premium;
+  final Future<void> Function() onManageSubscription;
+
+  String _planLabel(String? planId) {
+    switch (planId) {
+      case 'premium_annual':
+        return 'Annual Premium';
+      case 'premium_monthly':
+        return 'Monthly Premium';
+      default:
+        return 'Premium plan';
+    }
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '—';
+    final local = date.toLocal();
+    return '${local.month}/${local.day}/${local.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final renewalText = premium.expiresAt != null
+        ? 'Renews on ${_formatDate(premium.expiresAt)}'
+        : 'Renews automatically each cycle';
+    final trialText = premium.isTrial && premium.trialEndsAt != null
+        ? 'Trial ends ${_formatDate(premium.trialEndsAt)}'
+        : null;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.workspace_premium_outlined, color: theme.colorScheme.primary),
+              const SizedBox(width: 12),
+              Text(
+                _planLabel(premium.planId),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            renewalText,
+            style: theme.textTheme.bodyMedium,
+          ),
+          if (trialText != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              trialText,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          FilledButton.tonalIcon(
+            onPressed: () async {
+              await onManageSubscription();
+            },
+            icon: const Icon(Icons.manage_accounts_outlined),
+            label: const Text('Manage subscription'),
+          ),
+        ],
+      ),
     );
   }
 }
