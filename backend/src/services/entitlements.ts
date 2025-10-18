@@ -1,7 +1,7 @@
 import { supabaseAdmin, isSupabaseAdminAvailable } from './supabaseClient';
 
-const FREE_CHAT_DAILY_LIMIT = 20;
-const FREE_DEVOTIONAL_DAILY_LIMIT = 5;
+const FREE_CHAT_DAILY_LIMIT = 3;
+const FREE_DEVOTIONAL_DAILY_LIMIT = 1;
 
 interface AccessResult {
   allowed: boolean;
