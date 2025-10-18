@@ -306,7 +306,8 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
 
   Future<void> _handlePaywall(BuildContext context, String message) async {
     if (!context.mounted) return;
-    final upgraded = await showDialog<bool>(
+    final previousPremium = _premiumService.state.value.isPremium;
+    final upgradeAttempted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => PaywallDialog(
         message: message,
@@ -331,11 +332,22 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         },
       ),
     );
+    await _refreshFromSupabase();
+    await _premiumService.refreshStatus();
 
-    if (upgraded == true && context.mounted) {
+    final nowPremium = _premiumService.state.value.isPremium;
+    if (!context.mounted) return;
+
+    if (nowPremium && !previousPremium) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Premium unlocked! Enjoy unlimited access.'),
+        ),
+      );
+    } else if (upgradeAttempted == true && !nowPremium) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Complete checkout in the newly opened window, then return to continue.'),
         ),
       );
     }
