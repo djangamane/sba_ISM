@@ -52,7 +52,7 @@ class PaywallDialog extends StatelessWidget {
               );
             }
           },
-          child: const Text('Monthly $9.99'),
+          child: const Text('Monthly \$9.99'),
         ),
         FilledButton.tonal(
           onPressed: () async {
@@ -69,7 +69,7 @@ class PaywallDialog extends StatelessWidget {
               );
             }
           },
-          child: const Text('Annual $69.99'),
+          child: const Text('Annual \$69.99'),
         ),
       ],
     );
