@@ -19,6 +19,8 @@ class PremiumService {
   final BackendProfileService _backendProfileService =
       const BackendProfileService();
   final PaywallService _paywallService = PaywallService();
+  Uri? _monthlyCheckoutUri;
+  Uri? _annualCheckoutUri;
 
   Future<void> configure() async {
     // No-op for web build; Stripe configuration handled via backend.
@@ -28,6 +30,14 @@ class PremiumService {
       debugPrint(
           'Stripe publishable key missing. Premium checkout will use demo upgrade fallback.');
     }
+
+    final monthlyUrl = dotenv.maybeGet('STRIPE_CHECKOUT_MONTHLY') ??
+        const String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY', defaultValue: '');
+    final annualUrl = dotenv.maybeGet('STRIPE_CHECKOUT_ANNUAL') ??
+        const String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL', defaultValue: '');
+
+    _monthlyCheckoutUri = monthlyUrl.isNotEmpty ? Uri.tryParse(monthlyUrl) : null;
+    _annualCheckoutUri = annualUrl.isNotEmpty ? Uri.tryParse(annualUrl) : null;
   }
 
   Future<void> logIn(String? userId) async {
@@ -57,14 +67,22 @@ class PremiumService {
     );
   }
 
-  Future<bool> startPurchaseFlow() async {
+  Future<bool> startPurchaseFlow({bool annual = false}) async {
     try {
-      final checkoutUrl = await _paywallService.createStripeCheckoutSession();
-      if (checkoutUrl == null) {
+      final checkoutUrl = annual ? _annualCheckoutUri : _monthlyCheckoutUri;
+      if (checkoutUrl != null) {
+        final launched =
+            await launchUrl(checkoutUrl, mode: LaunchMode.externalApplication);
+        return launched;
+      }
+
+      final apiCheckoutUrl =
+          await _paywallService.createStripeCheckoutSession(planId: annual ? 'premium_annual' : 'premium_monthly');
+      if (apiCheckoutUrl == null) {
         return false;
       }
       final launched =
-          await launchUrl(checkoutUrl, mode: LaunchMode.externalApplication);
+          await launchUrl(apiCheckoutUrl, mode: LaunchMode.externalApplication);
       return launched;
     } catch (error) {
       debugPrint('Stripe checkout launch failed: $error');
