@@ -24,7 +24,7 @@ Ensure the backend dev server is running at `http://localhost:4000` (or `10.0.2.
 ### Web Build & Vercel Deployment
 1. Enable Flutter web support (once): `flutter config --enable-web`.
 2. Build the web bundle: `flutter build web --release`.
-3. The output lives in `build/web/`. Point your Vercel project at this directory (or use a post-build step that runs `flutter build web --release` and serves `build/web`).
+3. The output lives in `build/web/`. For Vercel, use the root build command `bash scripts/build_web.sh` and set the output directory to `mobile/spiritual_bible_chat/build/web`.
 4. Expose runtime configuration on Vercel:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
