@@ -23,11 +23,13 @@ class BackendProfileService {
     final Map<String, dynamic> body =
         jsonDecode(response.body) as Map<String, dynamic>;
 
-    final premium =
-        body['premium'] is Map ? body['premium'] as Map<String, dynamic> : null;
-    final trial = premium?['trial'] is Map
-        ? premium?['trial'] as Map<String, dynamic>
-        : null;
+    final premiumRaw = body['premium'];
+    final Map<String, dynamic>? premium =
+        premiumRaw is Map<String, dynamic> ? premiumRaw : null;
+
+    final trialRaw = premium?['trial'];
+    final Map<String, dynamic>? trial =
+        trialRaw is Map<String, dynamic> ? trialRaw : null;
 
     return PremiumState(
       isPremium: premium?['is_active'] == true,
