@@ -31,10 +31,16 @@
 
 ### 1.2 `/api/v1/paywall/stripe-checkout` (POST)
 - Starts a Stripe Checkout Session and returns `{ "checkoutUrl": "https://..." }`.
-- Request body: `{ "planId": "premium_monthly" }`.
-- Requires Supabase JWT; backend derives Stripe customer from profile (creates one if missing).
+- Request body: `{ "planId": "premium_monthly" }` (or `premium_annual`).
+- Requires Supabase JWT.
+
+### 1.3 `/api/v1/stripe/portal` (POST)
+- Creates a Stripe Billing Portal session and returns `{ "portalUrl": "https://..." }` so subscribers can manage their plan.
+- Requires Supabase JWT and an existing `stripe_customer_id` on the profile.
 
 ## 2. Stripe Integration
+- Required environment variables: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL`, `STRIPE_SUCCESS_URL`, `STRIPE_CANCEL_URL`, `STRIPE_WEBHOOK_SECRET` (plus optional `STRIPE_PORTAL_RETURN_URL`).
+
 ### 2.1 Server-side
 - Configure webhook endpoint `/api/v1/stripe/webhook` (POST).
   - Verify `Stripe-Signature` header using the webhook signing secret.
@@ -44,6 +50,7 @@
     - `premium_expires_at`.
     - `premium_source` (`stripe`).
     - `premium_trial_ends_at`.
+    - `stripe_customer_id`.
   - Log events to `premium_events` table for auditing.
 - Idempotent processing via `event_id` (store processed IDs).
 
@@ -58,7 +65,8 @@
 ```sql
 alter table public.profiles
   add column if not exists premium_source text check (premium_source in ('stripe', 'demo')) default null,
-  add column if not exists premium_trial_ends_at timestamptz;
+  add column if not exists premium_trial_ends_at timestamptz,
+  add column if not exists stripe_customer_id text;
 
 create table if not exists public.premium_events (
   id uuid primary key default gen_random_uuid(),

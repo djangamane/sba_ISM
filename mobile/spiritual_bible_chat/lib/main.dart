@@ -103,6 +103,10 @@ Future<void> main() async {
       'SUPABASE_ANON_KEY': String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: ''),
       'API_BASE_URL': String.fromEnvironment('API_BASE_URL', defaultValue: ''),
       'STRIPE_PUBLISHABLE_KEY': String.fromEnvironment('STRIPE_PUBLISHABLE_KEY', defaultValue: ''),
+      'STRIPE_CHECKOUT_MONTHLY':
+          String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY', defaultValue: ''),
+      'STRIPE_CHECKOUT_ANNUAL':
+          String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL', defaultValue: ''),
     };
     final buffer = StringBuffer();
     envMap.forEach((key, value) {
@@ -306,10 +310,10 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       context: context,
       builder: (dialogContext) => PaywallDialog(
         message: message,
-        onUpgrade: () async {
+        onSelectPlan: (annual) async {
           bool upgraded = false;
           try {
-            upgraded = await _premiumService.startPurchaseFlow();
+            upgraded = await _premiumService.startPurchaseFlow(annual: annual);
           } catch (error) {
             debugPrint('Purchase flow failed: $error');
           }
@@ -355,6 +359,22 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     });
     if (_profile != null) {
       await _scheduleReminder(_profile!.reminderSlot);
+    }
+  }
+
+  Future<void> _handleManageSubscription() async {
+    try {
+      final opened = await _premiumService.openManageSubscription();
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open billing portal right now.')),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
     }
   }
 
@@ -466,6 +486,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         onSignInRequested: () => AuthGate.requestSignIn(context),
         onShowPaywall: _handlePaywall,
         premium: _premiumState,
+        onManageSubscription: _handleManageSubscription,
       );
     }
 
@@ -497,6 +518,7 @@ class _AppShell extends StatefulWidget {
     required this.onSignInRequested,
     required this.onShowPaywall,
     required this.premium,
+    required this.onManageSubscription,
   });
 
   final OnboardingProfile profile;
@@ -512,6 +534,7 @@ class _AppShell extends StatefulWidget {
   final Future<void> Function(BuildContext context, String message)
       onShowPaywall;
   final PremiumState premium;
+  final Future<void> Function() onManageSubscription;
 
   @override
   State<_AppShell> createState() => _AppShellState();
@@ -707,6 +730,7 @@ class _AppShellState extends State<_AppShell> {
           userEmail: userEmail,
           onShowPaywall: widget.onShowPaywall,
           premium: widget.premium,
+          onManageSubscription: widget.onManageSubscription,
         ),
       ),
     ];
@@ -1525,6 +1549,7 @@ class _ProfileScreen extends StatelessWidget {
     required this.userEmail,
     required this.onShowPaywall,
     required this.premium,
+    required this.onManageSubscription,
   });
 
   final OnboardingProfile profile;
@@ -1537,6 +1562,7 @@ class _ProfileScreen extends StatelessWidget {
   final String? userEmail;
   final Future<void> Function(BuildContext, String) onShowPaywall;
   final PremiumState premium;
+  final Future<void> Function() onManageSubscription;
 
   @override
   Widget build(BuildContext context) {
@@ -1666,6 +1692,15 @@ class _ProfileScreen extends StatelessWidget {
                       'Upgrade to experience unlimited guidance and devotionals.',
                     ),
           ),
+          if (premium.isPremium)
+            _ProfileSettingTile(
+              icon: Icons.manage_accounts_outlined,
+              title: 'Manage subscription',
+              subtitle: 'Update billing or cancel anytime.',
+              onTap: () async {
+                await onManageSubscription();
+              },
+            ),
           const Divider(height: 32),
           const _ProfileSettingTile(
             icon: Icons.description_outlined,

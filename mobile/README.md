@@ -30,6 +30,8 @@ Ensure the backend dev server is running at `http://localhost:4000` (or `10.0.2.
    - `SUPABASE_ANON_KEY`
    - `API_BASE_URL`
    - `STRIPE_PUBLISHABLE_KEY`
+    - `STRIPE_CHECKOUT_MONTHLY` (optional payment link fallback)
+    - `STRIPE_CHECKOUT_ANNUAL` (optional payment link fallback)
 5. After deploy, verify the hosted site on desktop and mobile browsers (Lighthouse, responsive layouts) and confirm premium gating hits the production backend.
 
 ### Notifications

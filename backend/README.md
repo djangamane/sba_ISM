@@ -20,6 +20,11 @@ This Node.js/Express service proxies mobile traffic to OpenAI and central servic
 | `SUPABASE_SERVICE_ROLE_KEY` | _required_ | Supabase service role key used for server-side auth/usage logging |
 | `STRIPE_SECRET_KEY` | _required_ | Stripe API secret used to create checkout sessions |
 | `STRIPE_WEBHOOK_SECRET` | _(recommended)_ | Stripe webhook signing secret to validate events |
+| `STRIPE_PRICE_MONTHLY` | _required for checkout_ | Stripe price ID for the monthly subscription |
+| `STRIPE_PRICE_ANNUAL` | _required for checkout_ | Stripe price ID for the annual subscription |
+| `STRIPE_SUCCESS_URL` | `https://sba-ism.vercel.app/?session_id={CHECKOUT_SESSION_ID}` | URL to redirect after successful checkout (must contain `{CHECKOUT_SESSION_ID}`) |
+| `STRIPE_CANCEL_URL` | `https://sba-ism.vercel.app/paywall/canceled` | URL to redirect if checkout is canceled |
+| `STRIPE_PORTAL_RETURN_URL` | `https://sba-ism.vercel.app/profile` | URL to return to after visiting the billing portal |
 
 Copy `.env.example` to `.env` before running locally.
 
@@ -29,8 +34,9 @@ Copy `.env.example` to `.env` before running locally.
 - `POST /api/v1/devotional` – generates a daily devotional paragraph (Supabase JWT required, rate limited)
 - `GET /api/v1/profile` – fetch combined profile + streak + premium entitlement state (Supabase JWT required)
 - `POST /api/v1/paywall/grant-demo` – temporary helper to grant a 7-day premium demo to the authenticated user
-- `POST /api/v1/paywall/stripe-checkout` – placeholder endpoint for creating Stripe checkout sessions (returns 501 until wired)
-- `POST /api/v1/stripe/webhook` – Stripe webhook placeholder (returns 501 until wired)
+- `POST /api/v1/paywall/stripe-checkout` – create a Stripe Checkout Session (Supabase JWT required)
+- `POST /api/v1/stripe/portal` – create a Stripe Billing Portal session so users can manage subscriptions (Supabase JWT required)
+- `POST /api/v1/stripe/webhook` – Stripe webhook endpoint (expects raw body; signature verified against `STRIPE_WEBHOOK_SECRET`)
 
 ### Rate Limiting & Usage Logs
 - Chat: 30 requests per user per minute.
@@ -43,7 +49,8 @@ alter table public.profiles
   add column if not exists premium_expires_at timestamptz,
   add column if not exists premium_trial_ends_at timestamptz,
   add column if not exists premium_source text,
-  add column if not exists next_reminder_at timestamptz;
+  add column if not exists next_reminder_at timestamptz,
+  add column if not exists stripe_customer_id text;
 
 alter table public.profiles drop constraint if exists profiles_premium_source_check;
 alter table public.profiles add constraint profiles_premium_source_check

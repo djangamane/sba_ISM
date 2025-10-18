@@ -1,16 +1,27 @@
 import { Router } from 'express';
-import env from '../config/env';
+import { Router } from 'express';
+import { AuthenticatedRequest } from '../middleware/auth';
+import { createStripePortalSession } from '../services/stripeBilling';
 
 const router = Router();
 
-router.post('/webhook', (req, res) => {
-  if (!env.stripeWebhookSecret) {
-    return res
-      .status(501)
-      .json({ error: 'Stripe webhook secret not configured. Configure STRIPE_WEBHOOK_SECRET before enabling webhooks.' });
+router.post('/portal', async (req: AuthenticatedRequest, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Sign in required.' });
   }
 
-  return res.status(501).json({ error: 'Stripe webhook handling not implemented yet.' });
+  try {
+    const portalUrl = await createStripePortalSession(req.userId);
+    return res.json({ portalUrl });
+  } catch (error) {
+    console.error('Failed to create Stripe portal session', error);
+    return res.status(500).json({
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unable to create Stripe billing portal session.',
+    });
+  }
 });
 
 export default router;

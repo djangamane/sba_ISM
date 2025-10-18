@@ -12,6 +12,11 @@ const env = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',
+  stripePriceMonthly: process.env.STRIPE_PRICE_MONTHLY ?? '',
+  stripePriceAnnual: process.env.STRIPE_PRICE_ANNUAL ?? '',
+  stripeSuccessUrl: process.env.STRIPE_SUCCESS_URL ?? '',
+  stripeCancelUrl: process.env.STRIPE_CANCEL_URL ?? '',
+  stripePortalReturnUrl: process.env.STRIPE_PORTAL_RETURN_URL ?? '',
 };
 
 export default env;

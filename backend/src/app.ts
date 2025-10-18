@@ -1,10 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import routes from './routes';
+import stripeWebhookHandler from './routes/stripeWebhook';
 
 const app = express();
 
 app.use(cors());
+app.post('/api/v1/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 app.use(express.json({ limit: '1mb' }));
 app.use('/api', routes);
 

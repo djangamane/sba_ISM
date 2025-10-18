@@ -68,25 +68,47 @@ class PremiumService {
   }
 
   Future<bool> startPurchaseFlow({bool annual = false}) async {
+    await configure();
+
+    final planId = annual ? 'premium_annual' : 'premium_monthly';
+
     try {
-      final checkoutUrl = annual ? _annualCheckoutUri : _monthlyCheckoutUri;
-      if (checkoutUrl != null) {
+      final apiCheckoutUrl =
+          await _paywallService.createStripeCheckoutSession(planId: planId);
+      if (apiCheckoutUrl != null) {
         final launched =
-            await launchUrl(checkoutUrl, mode: LaunchMode.externalApplication);
+            await launchUrl(apiCheckoutUrl, mode: LaunchMode.externalApplication);
         return launched;
       }
-
-      final apiCheckoutUrl =
-          await _paywallService.createStripeCheckoutSession(planId: annual ? 'premium_annual' : 'premium_monthly');
-      if (apiCheckoutUrl == null) {
-        return false;
-      }
-      final launched =
-          await launchUrl(apiCheckoutUrl, mode: LaunchMode.externalApplication);
-      return launched;
     } catch (error) {
-      debugPrint('Stripe checkout launch failed: $error');
-      rethrow;
+      debugPrint('Backend checkout failed: $error');
+    }
+
+    try {
+      final fallbackUrl = annual ? _annualCheckoutUri : _monthlyCheckoutUri;
+      if (fallbackUrl != null) {
+        final launched =
+            await launchUrl(fallbackUrl, mode: LaunchMode.externalApplication);
+        return launched;
+      }
+    } catch (error) {
+      debugPrint('Payment link launch failed: $error');
+    }
+
+    throw Exception('Checkout is not available at this time.');
+  }
+
+  Future<bool> openManageSubscription() async {
+    await configure();
+    try {
+      final portalUrl = await _paywallService.createStripePortalSession();
+      if (portalUrl == null) {
+        throw Exception('Billing portal unavailable.');
+      }
+      return await launchUrl(portalUrl, mode: LaunchMode.externalApplication);
+    } catch (error) {
+      debugPrint('Failed to open billing portal: $error');
+      throw Exception('Unable to open billing portal right now.');
     }
   }
 }

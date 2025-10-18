@@ -54,4 +54,28 @@ class PaywallService {
     } catch (_) {}
     throw Exception(message);
   }
+
+  Future<Uri?> createStripePortalSession() async {
+    final uri = Uri.parse('${apiBaseUrl()}/api/v1/stripe/portal');
+    final response = await http.post(uri, headers: await authHeaders());
+    if (response.statusCode == 200) {
+      try {
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final url = body['portalUrl'] as String?;
+        if (url == null || url.isEmpty) {
+          return null;
+        }
+        return Uri.tryParse(url);
+      } catch (error) {
+        throw Exception('Unexpected portal response: $error');
+      }
+    }
+
+    String message = 'Unable to open billing portal.';
+    try {
+      final Map<String, dynamic> body = jsonDecode(response.body);
+      message = body['error'] as String? ?? message;
+    } catch (_) {}
+    throw Exception(message);
+  }
 }

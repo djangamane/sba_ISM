@@ -15,6 +15,6 @@ router.use('/v1/chat', requireAuth, rateLimit(DEFAULT_CHAT_LIMIT), chatRouter);
 router.use('/v1/devotional', requireAuth, rateLimit(DEFAULT_DEVOTIONAL_LIMIT), devotionalRouter);
 router.use('/v1/paywall', requireAuth, paywallRouter);
 router.use('/v1/profile', requireAuth, profileRouter);
-router.use('/v1/stripe', stripeRouter);
+router.use('/v1/stripe', requireAuth, stripeRouter);
 
 export default router;

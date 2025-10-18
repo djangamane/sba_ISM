@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 class PaywallDialog extends StatelessWidget {
-  const PaywallDialog(
-      {super.key, required this.onUpgrade, required this.message});
+  const PaywallDialog({
+    super.key,
+    required this.onSelectPlan,
+    required this.message,
+  });
 
-  final Future<void> Function() onUpgrade;
+  final Future<void> Function(bool annual) onSelectPlan;
   final String message;
 
   @override
@@ -37,7 +40,7 @@ class PaywallDialog extends StatelessWidget {
         FilledButton(
           onPressed: () async {
             try {
-              await onUpgrade();
+              await onSelectPlan(false);
               if (context.mounted) {
                 Navigator.of(context).pop(true);
               }
@@ -49,7 +52,24 @@ class PaywallDialog extends StatelessWidget {
               );
             }
           },
-          child: const Text('Upgrade now'),
+          child: const Text('Monthly $9.99'),
+        ),
+        FilledButton.tonal(
+          onPressed: () async {
+            try {
+              await onSelectPlan(true);
+              if (context.mounted) {
+                Navigator.of(context).pop(true);
+              }
+            } catch (error) {
+              if (!context.mounted) return;
+              Navigator.of(context).pop(false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(error.toString())),
+              );
+            }
+          },
+          child: const Text('Annual $69.99'),
         ),
       ],
     );

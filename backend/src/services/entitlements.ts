@@ -125,3 +125,39 @@ export const grantDemoPremium = async (userId: string, durationDays = 7) => {
       premium_source: 'demo',
     }, { onConflict: 'user_id' });
 };
+
+interface StripeSubscriptionState {
+  isActive: boolean;
+  currentPeriodEnd?: number | null;
+  trialEnd?: number | null;
+  customerId?: string | null;
+}
+
+export const applyStripeSubscription = async (userId: string, state: StripeSubscriptionState) => {
+  if (!isSupabaseAdminAvailable || !supabaseAdmin) {
+    throw new Error('Supabase admin client unavailable');
+  }
+
+  const expiresAtIso =
+    state.currentPeriodEnd && state.isActive
+      ? new Date(state.currentPeriodEnd * 1000).toISOString()
+      : null;
+  const trialEndsIso =
+    state.trialEnd && state.isActive
+      ? new Date(state.trialEnd * 1000).toISOString()
+      : null;
+
+  await supabaseAdmin
+    .from('profiles')
+    .upsert(
+      {
+        user_id: userId,
+        is_premium: state.isActive,
+        premium_expires_at: state.isActive ? expiresAtIso : null,
+        premium_trial_ends_at: state.isActive ? trialEndsIso : null,
+        premium_source: state.isActive ? 'stripe' : null,
+        stripe_customer_id: state.customerId ?? null,
+      },
+      { onConflict: 'user_id' }
+    );
+};

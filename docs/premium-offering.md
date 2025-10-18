@@ -39,6 +39,7 @@ Key marketing message: **“Deepen your walk with unlimited guidance, tailored p
   1. “Unlimited AI mentoring rooted in scripture”
   2. “Exclusive guided practices and audio reflections”
   3. “Keep your streak soaring with forgiveness boosts”
+  4. “Manage your plan instantly via the billing portal”
 - **Design Notes**:
   - Gradient background: `#5E4AE3 → #B794F4`
   - Accent icons: outline style with gold highlights `#E3B341`

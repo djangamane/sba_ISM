@@ -19,6 +19,7 @@
 - Today tab: `Guided Practice` tile uses `LockedContentCard`; tapping pushes `PaywallScaffold`.
 - Progress tab: `Streak booster` CTA opens full paywall.
 - Settings/Profile: static list tile `Manage Subscription` that navigates to paywall when not premium, and to subscription settings when premium.
+- Settings/Profile: static list tile `Manage Subscription` that launches the Stripe billing portal when premium is active.
 - Deep links: support `sba://paywall` to open `PaywallScaffold` with optional query `source`.
 
 ## 3. Visual & Motion Details
