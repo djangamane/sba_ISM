@@ -1,5 +1,3 @@
-import Stripe from 'stripe';
-
 import env from '../config/env';
 import { stripeClient, isStripeConfigured } from './stripeClient';
 import { supabaseAdmin, isSupabaseAdminAvailable } from './supabaseClient';
@@ -110,7 +108,7 @@ export const createStripePortalSession = async (userId: string): Promise<string>
   return session.url;
 };
 
-const logStripeEvent = async (userId: string | null, event: Stripe.Event) => {
+const logStripeEvent = async (userId: string | null, event: any) => {
   if (!userId || !isSupabaseAdminAvailable || !supabaseAdmin) {
     return;
   }
@@ -138,10 +136,7 @@ const subscriptionIsActive = (status: string | null | undefined): boolean => {
   return ['trialing', 'active', 'past_due', 'unpaid'].includes(status);
 };
 
-const applySubscriptionFromStripe = async (
-  subscription: Stripe.Subscription,
-  userId: string | null
-) => {
+const applySubscriptionFromStripe = async (subscription: any, userId: string | null) => {
   if (!userId) {
     return;
   }
@@ -154,9 +149,9 @@ const applySubscriptionFromStripe = async (
   });
 };
 
-const handleCheckoutSessionCompleted = async (event: Stripe.Event) => {
+const handleCheckoutSessionCompleted = async (event: any) => {
   if (!stripeClient) return;
-  const session = event.data.object as Stripe.Checkout.Session;
+  const session = event.data.object as any;
   const userId = session.metadata?.user_id ?? null;
   const subscriptionId = toStripeId(session.subscription);
 
@@ -175,8 +170,8 @@ const handleCheckoutSessionCompleted = async (event: Stripe.Event) => {
   await logStripeEvent(userId, event);
 };
 
-const handleSubscriptionEvent = async (event: Stripe.Event) => {
-  const subscription = event.data.object as Stripe.Subscription;
+const handleSubscriptionEvent = async (event: any) => {
+  const subscription = event.data.object as any;
   const userId = subscription.metadata?.user_id ?? null;
   if (!userId) {
     await logStripeEvent(null, event);
@@ -187,7 +182,7 @@ const handleSubscriptionEvent = async (event: Stripe.Event) => {
   await logStripeEvent(userId, event);
 };
 
-export const handleStripeEvent = async (event: Stripe.Event) => {
+export const handleStripeEvent = async (event: any) => {
   switch (event.type) {
     case 'checkout.session.completed':
       await handleCheckoutSessionCompleted(event);

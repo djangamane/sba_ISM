@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { supabaseAdmin, isSupabaseAdminAvailable } from '../services/supabaseClient';
+import env from '../config/env';
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -8,8 +9,13 @@ export interface AuthenticatedRequest extends Request {
 
 export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!isSupabaseAdminAvailable || !supabaseAdmin) {
-    // Skip auth when Supabase keys are not configured (local dev fallback).
-    return next();
+    if (env.nodeEnv === 'development' || env.nodeEnv === 'test') {
+      return next();
+    }
+    return res.status(500).json({
+      error:
+        'Supabase service role credentials are not configured. Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the server.',
+    });
   }
 
   try {

@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-import Stripe from 'stripe';
-
 import env from '../config/env';
 import { stripeClient, isStripeConfigured } from '../services/stripeClient';
 import { handleStripeEvent } from '../services/stripeBilling';
@@ -21,7 +19,7 @@ const stripeWebhookHandler = async (req: Request, res: Response) => {
 
   const payload = req.body;
 
-  let event: Stripe.Event;
+  let event: any;
   try {
     event = stripeClient.webhooks.constructEvent(payload, signature, env.stripeWebhookSecret);
   } catch (error) {

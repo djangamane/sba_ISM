@@ -17,6 +17,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _error;
+  String? _info;
 
   @override
   void dispose() {
@@ -29,18 +30,27 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _info = null;
     });
     try {
       final client = Supabase.instance.client;
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       if (isSignUp) {
-        await client.auth.signUp(email: email, password: password);
+        final response = await client.auth.signUp(email: email, password: password);
+        if (response.session != null) {
+          if (mounted) widget.onSignedIn();
+        } else {
+          setState(() {
+            _info =
+                'Account created! Check your email to confirm your address before signing in.';
+          });
+        }
       } else {
         await client.auth.signInWithPassword(email: email, password: password);
-      }
-      if (mounted) {
-        widget.onSignedIn();
+        if (mounted) {
+          widget.onSignedIn();
+        }
       }
     } on AuthException catch (error) {
       setState(() {
@@ -97,6 +107,16 @@ class _SignInScreenState extends State<SignInScreen> {
                   _error!,
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.error),
+                ),
+              if (_info != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    _info!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
               const SizedBox(height: 16),
               Row(
