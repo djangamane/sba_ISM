@@ -10,7 +10,13 @@ curl -L "https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER
 mkdir -p /tmp/flutter-sdk
 tar xf /tmp/flutter.tar.xz -C /tmp/flutter-sdk
 
-export PATH="/tmp/flutter-sdk/flutter/bin:${PATH}"
+export FLUTTER_HOME="/tmp/flutter-sdk/flutter"
+export PATH="${FLUTTER_HOME}/bin:${PATH}"
+
+git config --global --add safe.directory "${FLUTTER_HOME}"
+
+flutter config --no-analytics >/dev/null 2>&1 || true
+flutter --version
 
 flutter config --enable-web
 flutter precache --web
