@@ -7,7 +7,7 @@ class PaywallDialog extends StatelessWidget {
     required this.message,
   });
 
-  final Future<void> Function(bool annual) onSelectPlan;
+  final Future<bool> Function(bool annual) onSelectPlan;
   final String message;
 
   @override
@@ -39,35 +39,17 @@ class PaywallDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            try {
-              await onSelectPlan(false);
-              if (context.mounted) {
-                Navigator.of(context).pop(true);
-              }
-            } catch (error) {
-              if (!context.mounted) return;
-              Navigator.of(context).pop(false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(error.toString())),
-              );
-            }
+            final success = await onSelectPlan(false);
+            if (!context.mounted) return;
+            Navigator.of(context).pop(success);
           },
           child: const Text('Monthly \$9.99'),
         ),
         FilledButton.tonal(
           onPressed: () async {
-            try {
-              await onSelectPlan(true);
-              if (context.mounted) {
-                Navigator.of(context).pop(true);
-              }
-            } catch (error) {
-              if (!context.mounted) return;
-              Navigator.of(context).pop(false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(error.toString())),
-              );
-            }
+            final success = await onSelectPlan(true);
+            if (!context.mounted) return;
+            Navigator.of(context).pop(success);
           },
           child: const Text('Annual \$69.99'),
         ),

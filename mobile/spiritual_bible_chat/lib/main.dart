@@ -311,17 +311,23 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       builder: (dialogContext) => PaywallDialog(
         message: message,
         onSelectPlan: (annual) async {
-          bool upgraded = false;
           try {
-            upgraded = await _premiumService.startPurchaseFlow(annual: annual);
+            final success = await _premiumService.startPurchaseFlow(annual: annual);
+            if (!success) {
+              throw Exception('Checkout cancelled or blocked.');
+            }
+            await _refreshFromSupabase();
+            await _premiumService.refreshStatus();
+            return true;
           } catch (error) {
             debugPrint('Purchase flow failed: $error');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(error.toString())),
+              );
+            }
+            return false;
           }
-          if (!upgraded) {
-            await _paywallService.requestDemoUpgrade();
-          }
-          await _refreshFromSupabase();
-          await _premiumService.refreshStatus();
         },
       ),
     );

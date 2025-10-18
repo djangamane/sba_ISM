@@ -75,27 +75,28 @@ class PremiumService {
     try {
       final apiCheckoutUrl =
           await _paywallService.createStripeCheckoutSession(planId: planId);
-      if (apiCheckoutUrl != null) {
-        final launched =
-            await launchUrl(apiCheckoutUrl, mode: LaunchMode.externalApplication);
-        return launched;
+      if (apiCheckoutUrl == null) {
+        throw Exception('Checkout URL unavailable.');
       }
+      final mode = kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication;
+      final launched = await launchUrl(apiCheckoutUrl, mode: mode);
+      if (!launched) {
+        throw Exception('Unable to open checkout window. Please disable pop-up blockers and try again.');
+      }
+      return true;
     } catch (error) {
       debugPrint('Backend checkout failed: $error');
-    }
-
-    try {
       final fallbackUrl = annual ? _annualCheckoutUri : _monthlyCheckoutUri;
       if (fallbackUrl != null) {
-        final launched =
-            await launchUrl(fallbackUrl, mode: LaunchMode.externalApplication);
-        return launched;
+        final mode = kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication;
+        final launched = await launchUrl(fallbackUrl, mode: mode);
+        if (!launched) {
+          throw Exception('Unable to open checkout window. Please disable pop-up blockers and try again.');
+        }
+        return true;
       }
-    } catch (error) {
-      debugPrint('Payment link launch failed: $error');
+      rethrow;
     }
-
-    throw Exception('Checkout is not available at this time.');
   }
 
   Future<bool> openManageSubscription() async {
