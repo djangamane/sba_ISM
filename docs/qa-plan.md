@@ -23,7 +23,7 @@
 ### 3. Security & Privacy
 - Static analysis (`dart analyze`, `npm audit`).
 - Network sniff test (ensure TLS everywhere, no secrets in payloads).
-- Data deletion flow validation (account removal wipes Firestore, RevenueCat subscriber attributes).
+- Data deletion flow validation (account removal wipes Supabase profile, Stripe customer metadata).
 
 ### 4. Regression
 - Automated test suites run on CI for every PR:
@@ -34,8 +34,8 @@
 
 ## Environments
 - **Local**: dev configs with mock OpenAI server (to avoid quota drain).
-- **Staging**: mirrors production services (Firebase project `sba-staging`, RevenueCat sandbox, OpenAI staging key).
-- **Production**: locked to release builds, monitoring via Crashlytics and RevenueCat dashboards.
+- **Staging**: mirrors production services (Firebase project `sba-staging`, Stripe test mode, OpenAI staging key).
+- **Production**: locked to release builds, monitoring via Crashlytics and Stripe dashboards.
 
 ## Tooling
 - Device lab: iPhone 12/14, iPad Mini, Pixel 5/7, Galaxy A series, low-end Android (Moto G).

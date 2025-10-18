@@ -51,7 +51,7 @@ _Last updated: 2024-10-12_
 ## Outstanding Tasks
 1. **Paywall & Entitlements**
    - Introduce premium gating in Flutter and backend enforcement.
-   - Integrate RevenueCat or Supabase-based subscription record.
+   - Integrate Stripe-based subscription record with Supabase sync.
 2. **Notification Enhancements**
    - Hook Supabase cron / cloud functions for server-driven reminders.
    - Deep link notification taps into contextual screens.

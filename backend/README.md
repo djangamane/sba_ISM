@@ -18,9 +18,8 @@ This Node.js/Express service proxies mobile traffic to OpenAI and central servic
 | `OPENAI_ASSISTANT_ID` | _required_ | Assistant ID to run conversations against |
 | `SUPABASE_URL` | _required_ | Supabase project URL used for JWT validation |
 | `SUPABASE_SERVICE_ROLE_KEY` | _required_ | Supabase service role key used for server-side auth/usage logging |
-| `REVENUECAT_API_URL` | `https://api.revenuecat.com/v1` | RevenueCat REST API base URL (for offerings fetch, future use) |
-| `REVENUECAT_API_KEY` | _(optional)_ | RevenueCat API key for server-to-server requests |
-| `REVENUECAT_WEBHOOK_SECRET` | _required for webhooks_ | Shared secret used to verify RevenueCat webhook calls |
+| `STRIPE_SECRET_KEY` | _required_ | Stripe API secret used to create checkout sessions |
+| `STRIPE_WEBHOOK_SECRET` | _(recommended)_ | Stripe webhook signing secret to validate events |
 
 Copy `.env.example` to `.env` before running locally.
 
@@ -30,7 +29,8 @@ Copy `.env.example` to `.env` before running locally.
 - `POST /api/v1/devotional` – generates a daily devotional paragraph (Supabase JWT required, rate limited)
 - `GET /api/v1/profile` – fetch combined profile + streak + premium entitlement state (Supabase JWT required)
 - `POST /api/v1/paywall/grant-demo` – temporary helper to grant a 7-day premium demo to the authenticated user
-- `POST /api/v1/revenuecat/webhook` – RevenueCat server webhook (validated via `REVENUECAT_WEBHOOK_SECRET`)
+- `POST /api/v1/paywall/stripe-checkout` – placeholder endpoint for creating Stripe checkout sessions (returns 501 until wired)
+- `POST /api/v1/stripe/webhook` – Stripe webhook placeholder (returns 501 until wired)
 
 ### Rate Limiting & Usage Logs
 - Chat: 30 requests per user per minute.
@@ -47,7 +47,7 @@ alter table public.profiles
 
 alter table public.profiles drop constraint if exists profiles_premium_source_check;
 alter table public.profiles add constraint profiles_premium_source_check
-  check (premium_source in ('revenuecat', 'demo') or premium_source is null);
+  check (premium_source in ('stripe', 'demo') or premium_source is null);
 
 create table if not exists public.usage_logs (
   id uuid primary key default gen_random_uuid(),

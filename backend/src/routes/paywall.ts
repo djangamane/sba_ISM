@@ -20,4 +20,14 @@ router.post('/grant-demo', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+router.post('/stripe-checkout', async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Sign in required.' });
+  }
+
+  return res.status(501).json({
+    error: 'Stripe checkout session creation not yet implemented. Configure Stripe backend integration before enabling this flow.',
+  });
+});
+
 export default router;

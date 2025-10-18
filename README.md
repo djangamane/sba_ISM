@@ -24,7 +24,7 @@ This repository hosts the codebase for the Spiritual Bible Chat App, an AI-assis
 | Local storage | `shared_preferences`, `hive` | Preferences + lightweight offline cache |
 | Notifications | `flutter_local_notifications`, Firebase Cloud Messaging | Local scheduling + remote campaigns |
 | Auth & data sync | Firebase Authentication & Firestore | Optional account sync + personalization |
-| Subscriptions | RevenueCat SDK | Unified IAP handling for iOS/Android |
+| Subscriptions | Stripe Billing | Hosted checkout + subscriptions |
 | AI gateway | Custom server (Node.js/Express) | Proxy to OpenAI, enforce usage limits, retrieval augmentation |
 | AI provider | OpenAI GPT-4 / GPT-3.5 | System prompt tuned to Neville’s teachings |
 
@@ -35,7 +35,7 @@ This repository hosts the codebase for the Spiritual Bible Chat App, an AI-assis
 │  Mobile App │      │ (Node.js)      │       │ (Chat / Mods) │
 └────────────┘      └────────────────┘       └───────────────┘
       │                      │                        │
-      │ Firebase SDKs        │ Firestore / Storage    │ RevenueCat
+      │ Firebase SDKs        │ Firestore / Storage    │ Stripe Billing
       ▼                      ▼                        ▼
 ┌──────────────┐     ┌────────────────┐        ┌────────────────┐
 │Local Storage │     │ User Profiles  │        │ Subscription    │

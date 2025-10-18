@@ -46,8 +46,8 @@ Key marketing message: **“Deepen your walk with unlimited guidance, tailored p
 
 ## 5. Technical Acceptance Criteria
 1. **Entitlement Sources**:
-   - RevenueCat entitlements `premium_monthly` and `premium_annual` map to Supabase `profiles.is_premium` + `premium_expires_at`.
-   - Trial flag stored via RevenueCat trial identifiers; surfaced to app for countdown.
+   - Stripe subscription products `premium_monthly` and `premium_annual` map to Supabase `profiles.is_premium` + `premium_expires_at`.
+   - Trial flag stored via Stripe trial metadata; surfaced to app for countdown.
 2. **State Handling**:
    - App reacts instantly to entitlement changes (purchase, renewal, cancellation) via in-app listener plus `/api/v1/profile` fallback sync.
    - Premium badge persists offline using cached profile data.
@@ -56,7 +56,7 @@ Key marketing message: **“Deepen your walk with unlimited guidance, tailored p
    - Support deep link `sba://paywall` for campaign use.
 4. **Copy/Localization**:
    - Strings centralized under `lib/l10n/paywall.json` for future translation.
-   - Currency localization handled via RevenueCat price formatting rather than static strings.
+   - Currency localization handled via Stripe Checkout hosted UI rather than static strings.
 
 ## 6. Metrics & Analytics
 - **Events**:
@@ -67,13 +67,13 @@ Key marketing message: **“Deepen your walk with unlimited guidance, tailored p
   - Paywall view → trial start → D7 retention.
   - Free cap hit → paywall view → conversion.
 - **Dashboards**:
-  - RevenueCat overview (MRR, active trials).
+  - Stripe Billing analytics for MRR/trials.
   - Supabase logs for entitlement mismatches (ensure 0 after stabilization).
 
 ## 7. Dependencies & Open Questions
 - **Design**: High-fidelity paywall visuals + icon set due by end of current sprint.
 - **Legal**: Confirm subscription copy meets App Store / Play Store guidelines (esp. trial renewal disclosure).
 - **Support**: Draft FAQ for billing, cancellations, and trial handling.
-- **Question**: Do we allow limited-time promotional codes pre-launch? (Impacts RevenueCat configuration.)
+- **Question**: Do we allow limited-time promotional codes pre-launch? (Impacts Stripe coupon setup.)
 
 This specification should be reviewed and signed off by Product, Design, and Engineering before implementing the paywall experience.

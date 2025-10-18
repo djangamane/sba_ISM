@@ -5,7 +5,7 @@ The system delivers a personalized, AI-assisted spiritual experience while prese
 
 1. **Client (Flutter Mobile App)** – Provides onboarding, daily content, chat UX, and streak gamification. Handles local caching, offline reading, and notification scheduling.
 2. **Application Backend** – Acts as a secure middle layer for AI requests, content management, subscription validation, and analytics hooks.
-3. **External Services** – OpenAI for language generation, Firebase suite for auth/notifications/storage, RevenueCat for subscriptions, optional Bible content APIs.
+3. **External Services** – OpenAI for language generation, Firebase suite for auth/notifications/storage, Stripe for subscriptions, optional Bible content APIs.
 
 ## 2. Mobile Client
 - **Framework**: Flutter 3.x, targeting iOS & Android. Declarative UI with adaptive theming (light/dark). Uses Riverpod for state management.
@@ -18,7 +18,7 @@ The system delivers a personalized, AI-assisted spiritual experience while prese
 - **Local Storage**:
   - `shared_preferences` for lightweight flags (quiz completion, notification time).
   - `Hive` (encrypted box) for chat transcript cache and verse backlog.
-  - `flutter_secure_storage` for auth tokens and RevenueCat app user ID.
+  - `flutter_secure_storage` for auth tokens and Stripe customer reference (optional if we cache locally).
 - **Networking**: `dio` with interceptors for auth headers, rate limit handling, exponential backoff.
 - **Notifications**: `flutter_local_notifications` (device-scheduled daily inspiration) + FCM background handler for remote campaigns.
 
@@ -30,7 +30,7 @@ The system delivers a personalized, AI-assisted spiritual experience while prese
   - Proxy GPT requests with system prompt injection + conversation context trimming.
   - Optional retrieval augmentation using embeddings and a vector store (Pinecone/Weaviate) seeded with Neville Goddard libraries + key scriptures.
   - Serve daily content feed (verse of day, affirmations) from CMS/Firestore.
-  - Webhooks for RevenueCat subscription events to update entitlements.
+  - Webhooks for Stripe subscription events to update entitlements.
   - Trigger push campaigns (via Firebase Cloud Messaging) for streak nudges.
 - **Data Stores**:
   - Firestore collections: `users`, `preferences`, `streaks`, `usageCounters`, `dailyContent`, `badges`.
@@ -51,9 +51,9 @@ The system delivers a personalized, AI-assisted spiritual experience while prese
 ## 5. Subscriptions & Monetization
 - **Strategy**: Freemium with soft gate; Paywall triggered on usage limit, accessible via profile.
 - **Implementation**:
-  - RevenueCat entitlements: `premium_monthly`, `premium_annual` with 7-day trial.
-  - App identifies user via RevenueCat `AppUserID` (anonymous until optional sign-in).
-  - Backend uses RevenueCat webhooks to mirror entitlement status into Firestore for quick lookups and targeted messaging.
+  - Stripe products/prices: `premium_monthly`, `premium_annual` with optional trial.
+  - App identifies user via Supabase user ID; backend maps to Stripe customer IDs.
+  - Backend processes Stripe webhooks to mirror entitlement status into Supabase for quick lookups and targeted messaging.
 
 ## 6. Notifications & Engagement
 - **Daily Inspiration**: Local scheduled notification at user-selected time, preloaded with verse snippet. Offline safe (verses cached one week ahead).

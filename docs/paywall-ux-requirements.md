@@ -32,7 +32,7 @@
 ## 4. State Management & Data
 - Introduce `PremiumStateNotifier` (Riverpod) backed by `ProfileRepository`.  
   - Holds `isPremium`, `trialEndsAt`, `source` info.  
-  - Listens for RevenueCat purchase events; exposes stream for UI updates.
+  - Listens for Stripe webhook refresh events (via backend polling); exposes stream for UI updates.
 - Paywall components consume provider to:
   - Render trial countdown.  
   - Disable purchase button when pending transaction.  
@@ -40,10 +40,10 @@
 - Locked components check `isPremium` before rendering CTA vs unlocked content.
 
 ## 5. Purchase Flow Hooks
-- Paywall CTA delegates to `RevenueCatService.startPurchase(plan)`.  
-- On success: update `PremiumStateNotifier`, show success snackbar, pop paywall if contextual.
+- Paywall CTA delegates to `StripeCheckoutService.startSession(plan)`.  
+- On success redirect: backend listens to Stripe webhook → refresh premium state; show informative banner after returning to app.
 - On failure/user cancel: show inline error (non-disruptive) with “Try again” button.
-- Restore purchase button triggers `RevenueCat.restorePurchases` and handles possible no-entitlement result with friendly copy.
+- Provide “I already subscribed” button to force refresh from backend profile endpoint.
 
 ## 6. Content & Copy Integration
 - Strings collected under new localization namespace `paywall`.  

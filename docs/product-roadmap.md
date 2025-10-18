@@ -27,7 +27,7 @@
 - [ ] Internal QA of AI responses, prompt tuning backlog.
 
 ### M3 – Monetization Layer (Week 9–11)
-- [ ] Integrate RevenueCat SDK, define products, implement paywall UI.
+- [ ] Integrate Stripe Billing, define products, implement paywall UI.
 - [ ] Enforce entitlements client + server side.
 - [ ] Soft paywall triggers (usage overage, premium content gating).
 - [ ] Analytics funnel instrumentation (paywall → conversion).
@@ -67,6 +67,6 @@
 | Content licensing for Bible translations | Blockers for future features | Start with public domain KJV, negotiate modern translation rights post-launch |
 
 ## Tracking
-- Weekly checkpoints reviewing KPI dashboards (Firebase Analytics, RevenueCat, OpenAI usage).
+- Weekly checkpoints reviewing KPI dashboards (Firebase Analytics, Stripe, OpenAI usage).
 - Retro after each milestone to recalibrate scope.
 - Update this roadmap as milestones complete or priorities shift.
