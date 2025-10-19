@@ -1450,7 +1450,7 @@ class _ChatEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Offer a question, a tension, or a gratitude. I’ll reply with scripture-rooted, Neville-guided insight.',
+            'Offer a question, a tension, or a gratitude. I’ll respond with scripture-rooted wisdom. — OMEGA',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: AppColors.quartz,
