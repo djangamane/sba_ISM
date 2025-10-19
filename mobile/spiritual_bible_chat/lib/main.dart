@@ -22,9 +22,14 @@ import 'utils/api_base.dart';
 import 'utils/reminders.dart';
 import 'exceptions/paywall_required_exception.dart';
 import 'widgets/paywall_dialog.dart';
+import 'widgets/ankh_button.dart';
+import 'widgets/glass_card.dart';
+import 'widgets/ghost_button.dart';
+import 'widgets/quick_action_chip.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'services/paywall_service.dart';
+import 'theme/app_theme.dart';
 
 String describeGoal(SpiritualGoal goal) {
   switch (goal) {
@@ -102,9 +107,11 @@ Future<void> main() async {
   } else {
     final envMap = const {
       'SUPABASE_URL': String.fromEnvironment('SUPABASE_URL', defaultValue: ''),
-      'SUPABASE_ANON_KEY': String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: ''),
+      'SUPABASE_ANON_KEY':
+          String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: ''),
       'API_BASE_URL': String.fromEnvironment('API_BASE_URL', defaultValue: ''),
-      'STRIPE_PUBLISHABLE_KEY': String.fromEnvironment('STRIPE_PUBLISHABLE_KEY', defaultValue: ''),
+      'STRIPE_PUBLISHABLE_KEY':
+          String.fromEnvironment('STRIPE_PUBLISHABLE_KEY', defaultValue: ''),
       'STRIPE_CHECKOUT_MONTHLY':
           String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY', defaultValue: ''),
       'STRIPE_CHECKOUT_ANNUAL':
@@ -316,7 +323,8 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         message: message,
         onSelectPlan: (annual) async {
           try {
-            final success = await _premiumService.startPurchaseFlow(annual: annual);
+            final success =
+                await _premiumService.startPurchaseFlow(annual: annual);
             if (!success) {
               throw Exception('Checkout cancelled or blocked.');
             }
@@ -327,7 +335,11 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
             debugPrint('Purchase flow failed: $error');
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(error.toString())),
+                const SnackBar(
+                  content: Text(
+                    'We hit a snag opening checkout. Please try again in a moment.',
+                  ),
+                ),
               );
             }
             return false;
@@ -344,7 +356,8 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     if (nowPremium && !previousPremium) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Premium unlocked! Enjoy unlimited access.'),
+          content: Text(
+              'Premium unlocked — your inner work now flows without limits.'),
         ),
       );
       await _paywallService.logPaywallEvent(
@@ -354,7 +367,8 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     } else if (upgradeAttempted == true && !nowPremium) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Complete checkout in the newly opened window, then return to continue.'),
+          content: Text(
+              'Complete checkout in the opened window, then return to continue your practice.'),
         ),
       );
       await _paywallService.logPaywallEvent('purchase_cancelled');
@@ -393,13 +407,19 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       final opened = await _premiumService.openManageSubscription();
       if (!opened && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open billing portal right now.')),
+          const SnackBar(
+            content: Text(
+                'We couldn’t open the billing portal just now. Please try again soon.'),
+          ),
         );
       }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        const SnackBar(
+          content: Text(
+              'The subscription portal is unavailable. Please try again shortly.'),
+        ),
       );
     }
   }
@@ -439,43 +459,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
 
   @override
   Widget build(BuildContext context) {
-    final baseColorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF5E4AE3),
-      brightness: Brightness.light,
-    );
-
-    final theme = ThemeData(
-      colorScheme: baseColorScheme,
-      useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFFF5F3FF),
-      textTheme: Theme.of(context).textTheme.apply(
-            fontFamily: 'Roboto',
-            bodyColor: const Color(0xFF1F1B2E),
-            displayColor: const Color(0xFF1F1B2E),
-          ),
-      appBarTheme: const AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Color(0xFF1F1B2E),
-      ),
-    );
-
-    final darkTheme = ThemeData(
-      colorScheme: baseColorScheme.copyWith(brightness: Brightness.dark),
-      useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFF12101C),
-      textTheme: Theme.of(context).textTheme.apply(
-            bodyColor: const Color(0xFFE7E1FF),
-            displayColor: const Color(0xFFE7E1FF),
-          ),
-      appBarTheme: const AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Color(0xFFE7E1FF),
-      ),
-    );
+    final theme = buildAppTheme();
 
     Widget content;
     if (_isLoading || _preferences == null) {
@@ -519,9 +503,9 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     return MaterialApp(
       title: 'Spiritual Bible Chat',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
       theme: theme,
-      darkTheme: darkTheme,
+      darkTheme: theme,
+      themeMode: ThemeMode.dark,
       routes: {
         '/payment/success': (_) => const _CheckoutResultScreen(
               title: 'You’re all set!',
@@ -1011,31 +995,26 @@ class _TodayGreeting extends StatelessWidget {
   Widget build(BuildContext context) {
     final headline = goalHeadline(profile.goal);
     final subtext = goalSubtext(profile.goal);
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primaryContainer,
-            theme.colorScheme.secondaryContainer,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(26),
+      backgroundGradient: AppGradients.aurora,
+      borderColor: Colors.transparent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             headline,
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.obsidian,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             subtext,
-            style: theme.textTheme.bodyMedium,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.obsidian.withOpacity(0.85),
+            ),
           ),
         ],
       ),
@@ -1063,15 +1042,16 @@ class _TodayStreakStatus extends StatelessWidget {
         ? 'Current streak: ${streak.currentStreak} day${streak.currentStreak == 1 ? '' : 's'} • Longest: ${streak.longestStreak}'
         : 'Current streak: ${streak.currentStreak} • Longest: ${streak.longestStreak}';
     final reminderLabel = describeReminderDate(context, nextReminder);
+    final backgroundColor = hasCompleted
+        ? AppColors.scarabGreen.withOpacity(0.18)
+        : AppColors.onyx.withOpacity(0.6);
+    final iconColor =
+        hasCompleted ? AppColors.scarabGreen : theme.colorScheme.primary;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: hasCompleted
-            ? theme.colorScheme.tertiaryContainer
-            : theme.colorScheme.surfaceVariant,
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(22),
+      backgroundColor: backgroundColor,
+      borderColor: iconColor.withOpacity(0.28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1081,9 +1061,7 @@ class _TodayStreakStatus extends StatelessWidget {
                 hasCompleted
                     ? Icons.auto_awesome
                     : Icons.local_fire_department_outlined,
-                color: hasCompleted
-                    ? theme.colorScheme.tertiary
-                    : theme.colorScheme.primary,
+                color: iconColor,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1105,7 +1083,7 @@ class _TodayStreakStatus extends StatelessWidget {
           Text(
             'Next reminder: $reminderLabel',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: AppColors.quartz,
             ),
           ),
         ],
@@ -1129,19 +1107,17 @@ class _VerseOfTheDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(24),
-      ),
+    return GlassCard(
       padding: const EdgeInsets.all(24),
+      backgroundColor: AppColors.onyx.withOpacity(0.58),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Verse of the Day',
             style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.1,
             ),
           ),
           const SizedBox(height: 16),
@@ -1149,46 +1125,46 @@ class _VerseOfTheDayCard extends StatelessWidget {
             '“Be still, and know that I am God.”',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontStyle: FontStyle.italic,
+              height: 1.3,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Psalm 46:10',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.primary,
+              color: AppColors.maatGold,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              FilledButton(
+              AnkhButton(
+                label: 'Reflect with AI',
                 onPressed: onReflect,
-                child: const Text('Reflect with AI'),
               ),
-              const SizedBox(width: 12),
               if (!completed)
-                OutlinedButton.icon(
+                GhostButton(
+                  label: 'Mark complete',
+                  icon: Icons.check_circle_outline,
                   onPressed: () async {
                     await onMarkComplete();
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Marked today as complete. Great job!'),
+                          content: Text(
+                              'Today’s reflection is counted. Keep shining.'),
                         ),
                       );
                     }
                   },
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Mark complete'),
                 )
               else
-                Chip(
-                  avatar: Icon(
-                    Icons.check_circle,
-                    color: theme.colorScheme.primary,
-                  ),
-                  label: const Text('Completed today'),
+                const QuickActionChip(
+                  icon: Icons.check_circle,
+                  label: 'Completed today',
                 ),
             ],
           ),
@@ -1220,76 +1196,55 @@ class _QuickActionsSection extends StatelessWidget {
         .map(
           (label) => Chip(
             label: Text(label),
-            backgroundColor: theme.colorScheme.surfaceVariant,
+            backgroundColor: AppColors.onyx.withOpacity(0.45),
+            labelStyle: theme.textTheme.bodySmall,
           ),
         )
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Continue your practice',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      backgroundColor: AppColors.onyx.withOpacity(0.52),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Continue your practice',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        if (preferenceChips.isNotEmpty)
+          const SizedBox(height: 10),
+          if (preferenceChips.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: preferenceChips,
+            ),
+          const SizedBox(height: 18),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: preferenceChips,
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              QuickActionChip(
+                icon: Icons.auto_mode,
+                label: 'Resume chat',
+                onPressed: onResumeChat,
+              ),
+              QuickActionChip(
+                icon: Icons.book_outlined,
+                label: 'Daily devotional',
+                onPressed: onOpenDevotional,
+              ),
+              QuickActionChip(
+                icon: Icons.notifications_active_outlined,
+                label: 'Adjust reminders',
+                onPressed: onAdjustReminders,
+              ),
+            ],
           ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _QuickActionChip(
-              icon: Icons.auto_mode,
-              label: 'Resume chat',
-              onPressed: onResumeChat,
-            ),
-            _QuickActionChip(
-              icon: Icons.book_outlined,
-              label: 'Daily devotional',
-              onPressed: onOpenDevotional,
-            ),
-            _QuickActionChip(
-              icon: Icons.notifications_active_outlined,
-              label: 'Adjust reminders',
-              onPressed: onAdjustReminders,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _QuickActionChip extends StatelessWidget {
-  const _QuickActionChip({
-    required this.icon,
-    required this.label,
-    this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: Icon(icon, size: 20),
-      label: Text(label),
-      onPressed: onPressed ??
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$label is on the roadmap.')),
-            );
-          },
+        ],
+      ),
     );
   }
 }
@@ -1302,6 +1257,54 @@ class _ChatMessage {
 
   final String text;
   final bool isUser;
+}
+
+class _ChatEmptyState extends StatelessWidget {
+  const _ChatEmptyState({required this.onFocusInput});
+
+  final VoidCallback onFocusInput;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppGradients.aurora,
+            ),
+            child: const Icon(Icons.auto_awesome,
+                color: AppColors.obsidian, size: 32),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Ask from the heart.',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Share a question, a worry, or a gratitude. The assistant responds with scripture-grounded, Neville-honoring insight.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.quartz,
+            ),
+          ),
+          const SizedBox(height: 24),
+          GhostButton(
+            label: 'Begin a reflection',
+            icon: Icons.edit_note_outlined,
+            onPressed: onFocusInput,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ChatScreen extends StatefulWidget {
@@ -1431,14 +1434,17 @@ class _ChatScreenState extends State<_ChatScreen> {
           _messages.add(
             const _ChatMessage(
               text:
-                  'Something went wrong while contacting the assistant. Please try again shortly.',
+                  'The temple connection flickered. Give it a breath and try again.',
               isUser: false,
             ),
           );
         });
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.toString())),
+            const SnackBar(
+              content:
+                  Text('Connection dipped for a moment. Please try once more.'),
+            ),
           );
         }
       }
@@ -1469,28 +1475,23 @@ class _ChatScreenState extends State<_ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Ask anything on your heart. Neville-inspired, scripture-rooted guidance will appear here.',
-              style: theme.textTheme.bodyLarge,
+              'Begin with what’s on your heart — a question, a concern, a praise. I’ll respond with scripture-rooted guidance steeped in Neville’s imagination practice.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.quartz,
+                height: 1.4,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Expanded(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: theme.colorScheme.outlineVariant,
-                  ),
-                ),
+              child: GlassCard(
+                padding: _messages.isEmpty
+                    ? const EdgeInsets.all(32)
+                    : const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                backgroundColor: AppColors.onyx.withOpacity(0.62),
                 child: _messages.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Start a conversation whenever you are ready.',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      )
+                    ? _ChatEmptyState(onFocusInput: focusInput)
                     : ListView.builder(
                         controller: _listController,
-                        padding: const EdgeInsets.all(16),
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final entry = _messages[index];
@@ -1498,17 +1499,17 @@ class _ChatScreenState extends State<_ChatScreen> {
                               ? AlignmentDirectional.centerEnd
                               : AlignmentDirectional.centerStart;
                           final bubbleColor = entry.isUser
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.surfaceVariant;
+                              ? AppGradients.aurora.colors.last
+                              : AppColors.onyx.withOpacity(0.65);
                           final textColor = entry.isUser
-                              ? theme.colorScheme.onPrimary
-                              : theme.colorScheme.onSurface;
+                              ? AppColors.obsidian
+                              : AppColors.papyrus;
 
                           return Align(
                             alignment: alignment,
                             child: Container(
                               constraints: const BoxConstraints(maxWidth: 420),
-                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
                               padding: const EdgeInsets.symmetric(
                                 vertical: 12,
                                 horizontal: 16,
@@ -1516,6 +1517,15 @@ class _ChatScreenState extends State<_ChatScreen> {
                               decoration: BoxDecoration(
                                 color: bubbleColor,
                                 borderRadius: BorderRadius.circular(18),
+                                border: entry.isUser
+                                    ? Border.all(
+                                        color:
+                                            AppColors.maatGold.withOpacity(0.4),
+                                      )
+                                    : Border.all(
+                                        color: AppColors.maatGold
+                                            .withOpacity(0.22),
+                                      ),
                               ),
                               child: Text(
                                 entry.text,
@@ -1529,40 +1539,53 @@ class _ChatScreenState extends State<_ChatScreen> {
                       ),
               ),
             ),
-            if (_isSending) ...[
-              const SizedBox(height: 8),
-              const LinearProgressIndicator(minHeight: 2),
-            ],
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _inputController,
-                    focusNode: _inputFocusNode,
-                    enabled: !_isSending,
-                    minLines: 1,
-                    maxLines: 4,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _sendMessage(),
-                    decoration: InputDecoration(
-                      hintText: 'Type your prayer, question, or reflection…',
-                      filled: true,
-                      fillColor: theme.colorScheme.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+            AnimatedOpacity(
+              opacity: _isSending ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: _isSending
+                  ? const Padding(
+                      padding: EdgeInsets.only(top: 12.0),
+                      child: LinearProgressIndicator(minHeight: 2),
+                    )
+                  : const SizedBox(height: 12),
+            ),
+            GlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              backgroundColor: AppColors.onyx.withOpacity(0.72),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _inputController,
+                      focusNode: _inputFocusNode,
+                      enabled: !_isSending,
+                      minLines: 1,
+                      maxLines: 4,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _sendMessage(),
+                      style: theme.textTheme.bodyMedium,
+                      decoration: InputDecoration(
+                        hintText: 'Type your prayer, question, or reflection…',
+                        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.quartz.withOpacity(0.8),
+                        ),
+                        border: InputBorder.none,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                FilledButton.icon(
-                  onPressed: _isSending ? null : () => _sendMessage(),
-                  icon: const Icon(Icons.send),
-                  label: const Text('Send'),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  AnkhButton(
+                    label: 'Send',
+                    icon: Icons.send,
+                    onPressed: _isSending ? null : () => _sendMessage(),
+                    isLoading: _isSending,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -1605,92 +1628,153 @@ class _ProgressScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Current Streak',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+        children: [
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            backgroundGradient: const LinearGradient(
+              colors: [
+                Color(0x332A2721),
+                Color(0x665BD6E0),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current Streak',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    streakLabel,
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  streakLabel,
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.maatGold,
                   ),
-                  const SizedBox(height: 8),
-                  Text(motivationText, style: theme.textTheme.bodyMedium),
-                  const SizedBox(height: 8),
-                  Text('Longest streak: $longestLabel',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSecondaryContainer
-                            .withOpacity(0.8),
-                      )),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  motivationText,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Longest streak: $longestLabel',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppColors.quartz,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Achievements',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          ),
+          const SizedBox(height: 24),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            backgroundColor: AppColors.onyx.withOpacity(0.6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Milestones & reminders',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                _ProgressDetailRow(
+                  icon: Icons.notifications_active,
+                  title: 'Preferred reminder',
+                  subtitle:
+                      '${reminderLabel(profile.reminderSlot)} • $reminderDescription',
+                ),
+                const SizedBox(height: 16),
+                _ProgressDetailRow(
+                  icon: Icons.local_fire_department,
+                  title: 'Longest streak',
+                  subtitle: longestLabel,
+                  trailing: profile.wantsStreaks
+                      ? GhostButton(
+                          label: 'Reset streak',
+                          onPressed: onResetStreak,
+                          dense: true,
+                        )
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                _ProgressDetailRow(
+                  icon: Icons.workspace_premium_outlined,
+                  title: 'Milestones',
+                  subtitle:
+                      'Badges unlock as you sustain your rhythm. Stay consistent to reveal them.',
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.notifications_active,
-                  color: theme.colorScheme.primary),
-              title: const Text('Preferred reminder'),
-              subtitle: Text(
-                  '${reminderLabel(profile.reminderSlot)} • $reminderDescription'),
-            ),
-            const SizedBox(height: 8),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.local_fire_department,
-                  color: theme.colorScheme.primary),
-              title: const Text('Longest streak'),
-              subtitle: Text(longestLabel),
-              trailing: profile.wantsStreaks
-                  ? TextButton(
-                      onPressed: onResetStreak,
-                      child: const Text('Reset streak'),
-                    )
-                  : null,
-            ),
-            Expanded(
-              child: ListView.separated(
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: const Icon(Icons.lock_outline),
-                    title: Text('Milestone ${index + 1}'),
-                    subtitle:
-                        const Text('Unlocked once streak goals are reached.'),
-                  );
-                },
-                separatorBuilder: (_, __) => const Divider(),
-                itemCount: 3,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _ProgressDetailRow extends StatelessWidget {
+  const _ProgressDetailRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.onyx.withOpacity(0.7),
+          ),
+          child: Icon(icon, color: AppColors.maatGold, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.quartz,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (trailing != null) ...[
+          const SizedBox(width: 12),
+          trailing!,
+        ],
+      ],
     );
   }
 }
@@ -1731,8 +1815,12 @@ class _ProfileScreen extends StatelessWidget {
     if (uri == null) return;
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) {
+      final label = slug == 'privacy' ? 'privacy policy' : 'terms of service';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to open ${slug == 'privacy' ? 'privacy policy' : 'terms'} right now.')), 
+        SnackBar(
+          content: Text(
+              'We couldn’t open the $label just now. Please try again later.'),
+        ),
       );
     }
   }
@@ -1748,7 +1836,10 @@ class _ProfileScreen extends StatelessWidget {
     final launched = await launchUrl(uri);
     if (!launched) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email client not available on this device.')), 
+        const SnackBar(
+          content: Text(
+              'No email app detected. Reach us at janga.bussaja@gmail.com.'),
+        ),
       );
     }
   }
@@ -1778,76 +1869,123 @@ class _ProfileScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          ListTile(
-            leading: CircleAvatar(
-              radius: 28,
-              backgroundColor: theme.colorScheme.primaryContainer,
-              child: Text(
-                initials,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            title: Text(title),
-            subtitle: Text(subtitle),
-            trailing: isSignedIn
-                ? null
-                : TextButton(
-                    onPressed: onSignInRequested,
-                    child: const Text('Sign in'),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            backgroundColor: AppColors.onyx.withOpacity(0.62),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: AppColors.maatGold.withOpacity(0.18),
+                  child: Text(
+                    initials,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.maatGold,
+                    ),
                   ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.quartz,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!isSignedIn)
+                  GhostButton(
+                    label: 'Sign in',
+                    onPressed: onSignInRequested,
+                    dense: true,
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
-          Text(
-            'My focus',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w600),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            backgroundColor: AppColors.onyx.withOpacity(0.5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My focus',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    QuickActionChip(
+                      icon: Icons.self_improvement_outlined,
+                      label: describeGoal(profile.goal),
+                    ),
+                    QuickActionChip(
+                      icon: Icons.menu_book_outlined,
+                      label: familiarityLabel(profile.familiarity),
+                    ),
+                    ...profile.contentPreferences.map(
+                      (pref) => QuickActionChip(
+                        icon: Icons.brightness_5_outlined,
+                        label: contentPreferenceLabel(pref),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Chip(
-                label: Text(describeGoal(profile.goal)),
-                backgroundColor:
-                    theme.colorScheme.primaryContainer.withOpacity(0.6),
-              ),
-              Chip(
-                label: Text(familiarityLabel(profile.familiarity)),
-                backgroundColor:
-                    theme.colorScheme.secondaryContainer.withOpacity(0.6),
-              ),
-              ...profile.contentPreferences.map(
-                (pref) => Chip(
-                  label: Text(contentPreferenceLabel(pref)),
+          const SizedBox(height: 24),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            backgroundColor: AppColors.onyx.withOpacity(0.55),
+            child: ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              leading:
+                  const Icon(Icons.quiz_outlined, color: AppColors.maatGold),
+              title: Text(
+                'Retake onboarding quiz',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading:
-                Icon(Icons.quiz_outlined, color: theme.colorScheme.primary),
-            title: const Text(
-              'Retake onboarding quiz',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              subtitle: Text(
+                'Refresh your spiritual focus & preferences.',
+                style: theme.textTheme.bodySmall,
+              ),
+              trailing:
+                  const Icon(Icons.chevron_right, color: AppColors.maatGold),
+              onTap: () async {
+                await onRetakeRequested();
+              },
             ),
-            subtitle: const Text('Refresh your spiritual focus & preferences.'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              await onRetakeRequested();
-            },
           ),
           if (premium.isPremium) ...[
+            const SizedBox(height: 24),
             _PremiumSummaryCard(
               premium: premium,
               onManageSubscription: onManageSubscription,
             ),
-            const SizedBox(height: 24),
           ],
+          const SizedBox(height: 24),
           _ProfileSettingTile(
             icon: Icons.notifications_active_outlined,
             title: 'Notification schedule',
@@ -1855,23 +1993,14 @@ class _ProfileScreen extends StatelessWidget {
                 '${reminderLabel(profile.reminderSlot)} • ${describeReminderDate(context, nextReminder)}',
             onTap: onAdjustReminders,
           ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              profile.wantsStreaks
-                  ? Icons.local_fire_department
-                  : Icons.self_improvement,
-              color: theme.colorScheme.primary,
-            ),
-            title: const Text(
-              'Streak tracking',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Text(
-              profile.wantsStreaks
-                  ? 'Badges and streak celebrations are enabled.'
-                  : 'Gentle mode active — no streak pressure.',
-            ),
+          _ProfileSettingTile(
+            icon: profile.wantsStreaks
+                ? Icons.local_fire_department
+                : Icons.self_improvement,
+            title: 'Streak tracking',
+            subtitle: profile.wantsStreaks
+                ? 'Badges and streak celebrations are enabled.'
+                : 'Gentle mode active — no streak pressure.',
           ),
           _ProfileSettingTile(
             icon: Icons.workspace_premium_outlined,
@@ -1880,44 +2009,44 @@ class _ProfileScreen extends StatelessWidget {
             subtitle: premium.isPremium
                 ? 'Thank you for supporting the mission.'
                 : 'Unlock unlimited chat and devotional content.',
-            isDestructive: false,
             onTap: premium.isPremium
                 ? null
                 : () => onShowPaywall(
                       context,
-                      'Upgrade to experience unlimited guidance and devotionals.',
+                      'Unlock limitless guidance and devotionals with Premium.',
                     ),
           ),
-          const Divider(height: 32),
+          const SizedBox(height: 8),
           _ProfileSettingTile(
             icon: Icons.description_outlined,
             title: 'Privacy policy',
             onTap: () => _launchPolicy(context, 'privacy'),
           ),
-            _ProfileSettingTile(
-              icon: Icons.security_outlined,
-              title: 'Terms of service',
-              onTap: () => _launchPolicy(context, 'terms'),
-            ),
+          _ProfileSettingTile(
+            icon: Icons.security_outlined,
+            title: 'Terms of service',
+            onTap: () => _launchPolicy(context, 'terms'),
+          ),
           _ProfileSettingTile(
             icon: Icons.help_outline,
             title: 'Need help? Found a bug?',
             subtitle: 'Reach out to our support team.',
             onTap: () => _contactSupport(context),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           if (isSignedIn)
-            FilledButton.icon(
+            GhostButton(
+              label: 'Sign out',
+              icon: Icons.logout,
               onPressed: () async {
                 await onSignOut();
               },
-              icon: const Icon(Icons.logout),
-              label: const Text('Sign out'),
             )
           else
-            OutlinedButton(
+            AnkhButton(
+              label: 'Sign in to sync',
               onPressed: onSignInRequested,
-              child: const Text('Sign in to sync'),
+              expand: true,
             ),
         ],
       ),
@@ -1943,29 +2072,52 @@ class _ProfileSettingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: theme.colorScheme.primary),
-      title: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: isDestructive ? theme.colorScheme.error : null,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassCard(
+        padding: EdgeInsets.zero,
+        backgroundColor: AppColors.onyx.withOpacity(0.5),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          leading: Icon(
+            icon,
+            color: isDestructive ? theme.colorScheme.error : AppColors.maatGold,
+          ),
+          title: Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: isDestructive ? theme.colorScheme.error : null,
+            ),
+          ),
+          subtitle: subtitle != null
+              ? Text(
+                  subtitle!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.quartz,
+                  ),
+                )
+              : null,
+          trailing: const Icon(Icons.chevron_right, color: AppColors.maatGold),
+          onTap: onTap ??
+              () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        'That doorway isn’t open yet, but it’s on the roadmap.'),
+                  ),
+                );
+              },
         ),
       ),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      onTap: onTap ??
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$title is on the roadmap.')),
-            );
-          },
     );
   }
 }
 
 class _PremiumSummaryCard extends StatelessWidget {
-  const _PremiumSummaryCard({required this.premium, required this.onManageSubscription});
+  const _PremiumSummaryCard(
+      {required this.premium, required this.onManageSubscription});
 
   final PremiumState premium;
   final Future<void> Function() onManageSubscription;
@@ -1997,18 +2149,27 @@ class _PremiumSummaryCard extends StatelessWidget {
         ? 'Trial ends ${_formatDate(premium.trialEndsAt)}'
         : null;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(24),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      backgroundColor: AppColors.onyx.withOpacity(0.65),
+      borderColor: AppColors.maatGold.withOpacity(0.25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.workspace_premium_outlined, color: theme.colorScheme.primary),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppGradients.aurora,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_outlined,
+                  color: AppColors.obsidian,
+                  size: 22,
+                ),
+              ),
               const SizedBox(width: 12),
               Text(
                 _planLabel(premium.planId),
@@ -2021,7 +2182,9 @@ class _PremiumSummaryCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             renewalText,
-            style: theme.textTheme.bodyMedium,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.quartz,
+            ),
           ),
           if (trialText != null) ...[
             const SizedBox(height: 4),
@@ -2034,12 +2197,12 @@ class _PremiumSummaryCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          FilledButton.tonalIcon(
+          GhostButton(
+            label: 'Manage subscription',
+            icon: Icons.manage_accounts_outlined,
             onPressed: () async {
               await onManageSubscription();
             },
-            icon: const Icon(Icons.manage_accounts_outlined),
-            label: const Text('Manage subscription'),
           ),
         ],
       ),

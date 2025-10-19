@@ -73,27 +73,33 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   List<_OnboardingStep> get _steps => [
         _OnboardingStep(
-          title: 'What brings you here?',
+          title: 'What intention brings you to the temple?',
           description:
-              'Choose the option that best reflects your intention so we can tailor the journey.',
+              'Select the guiding intention so we can tailor your inner work.',
           body: _ChoiceList<SpiritualGoal>(
             options: const [
-              (SpiritualGoal.stressRelief, 'Find peace & stress relief'),
-              (SpiritualGoal.learnBible, 'Understand scripture better'),
-              (SpiritualGoal.manifestation, 'Explore manifestation & Neville'),
+              (SpiritualGoal.stressRelief, 'Seek calm & release stress'),
+              (
+                SpiritualGoal.learnBible,
+                'Deepen your understanding of scripture',
+              ),
+              (
+                SpiritualGoal.manifestation,
+                'Explore Neville’s imagination practice',
+              ),
               (
                 SpiritualGoal.dailyInspiration,
-                'Daily inspiration & encouragement'
+                'Invite daily inspiration & encouragement'
               ),
-              (SpiritualGoal.other, 'Something else'),
+              (SpiritualGoal.other, 'Something else entirely'),
             ],
             selected: _goal,
             onSelected: (value) => setState(() => _goal = value),
           ),
         ),
         _OnboardingStep(
-          title: 'How familiar are you with Neville Goddard?',
-          description: 'This helps us set the tone and depth of the guidance.',
+          title: 'How familiar are you with Neville Goddard’s teachings?',
+          description: 'We’ll tune the guidance based on your familiarity.',
           body: _ChoiceList<NevilleFamiliarity>(
             options: const [
               (NevilleFamiliarity.none, 'New to his teachings'),
@@ -105,13 +111,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           ),
         ),
         _OnboardingStep(
-          title: 'What resonates most with you?',
-          description: 'Pick one or more content styles you’d love to receive.',
+          title: 'Which guidance styles resonate with you?',
+          description: 'Choose the forms of guidance that nurture you.',
           body: _MultiChoiceChips<ContentPreference>(
             options: const [
               (ContentPreference.directScripture, 'Direct scripture'),
-              (ContentPreference.practicalAdvice, 'Practical life insights'),
-              (ContentPreference.guidedPrayer, 'Guided prayers / meditations'),
+              (
+                ContentPreference.practicalAdvice,
+                'Practical wisdom for daily life'
+              ),
+              (ContentPreference.guidedPrayer, 'Guided prayers & meditations'),
               (ContentPreference.affirmations, 'Affirmations & declarations'),
             ],
             selected: _contentPrefs,
@@ -125,27 +134,26 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           ),
         ),
         _OnboardingStep(
-          title: 'When should we nudge you?',
-          description:
-              'Choose the time you’re most receptive to daily inspiration.',
+          title: 'When should we gently nudge you?',
+          description: 'Choose when you’d like a soft reminder to reflect.',
           body: _ChoiceList<ReminderSlot>(
             options: const [
-              (ReminderSlot.morning, 'Morning (start the day centered)'),
-              (ReminderSlot.midday, 'Midday (lunchtime reset)'),
-              (ReminderSlot.evening, 'Evening (wind down with peace)'),
-              (ReminderSlot.gentle, 'Gentle reminder only if I forget'),
+              (ReminderSlot.morning, 'Morning • begin the day centered'),
+              (ReminderSlot.midday, 'Midday • a lunchtime reset'),
+              (ReminderSlot.evening, 'Evening • wind down with peace'),
+              (ReminderSlot.gentle, 'Only if I forget • gentle nudge'),
             ],
             selected: _reminderSlot,
             onSelected: (value) => setState(() => _reminderSlot = value),
           ),
         ),
         _OnboardingStep(
-          title: 'Would you like to track your streak?',
+          title: 'Would streak tracking support you?',
           description:
-              'Streaks can keep you accountable with celebratory milestones. We’ll still track privately for insights.',
+              'We can celebrate your consistency with streaks—or keep things quiet if you prefer.',
           body: _ChoiceList<bool>(
             options: const [
-              (true, 'Yes, motivate me with streaks'),
+              (true, 'Yes, celebrate my streaks'),
               (false, 'No thanks, keep it gentle'),
             ],
             selected: _wantsStreaks,
@@ -215,9 +223,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   const Spacer(),
                   FilledButton(
                     onPressed: _canContinue ? _next : null,
-                    child: Text(_currentStep == total - 1
-                        ? 'Start my journey'
-                        : 'Next'),
+                    child: Text(
+                      _currentStep == total - 1 ? 'Begin my journey' : 'Next',
+                    ),
                   ),
                 ],
               ),

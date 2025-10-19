@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+import 'ankh_button.dart';
+import 'ghost_button.dart';
+import 'glass_card.dart';
+
 class PaywallDialog extends StatelessWidget {
   const PaywallDialog({
     super.key,
@@ -13,45 +18,105 @@ class PaywallDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AlertDialog(
-      title: Text(
-        'Upgrade to Premium',
-        style:
-            theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(message),
-          const SizedBox(height: 12),
-          const Text('Premium unlocks:'),
-          const SizedBox(height: 8),
-          const Text('• Unlimited AI conversations'),
-          const Text('• Unlimited daily devotionals'),
-          const Text('• Priority responses and new features'),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Maybe later'),
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: GlassCard(
+        padding: const EdgeInsets.all(24),
+        backgroundColor: AppColors.onyx.withOpacity(0.88),
+        borderColor: AppColors.maatGold.withOpacity(0.28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).maybePop(false),
+                icon: const Icon(Icons.close, color: AppColors.quartz),
+              ),
+            ),
+            Text(
+              'Begin the inner work',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.quartz,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                _BenefitRow('Unlimited sacred conversations each day'),
+                SizedBox(height: 10),
+                _BenefitRow('Full devotional library & ritual blueprints'),
+                SizedBox(height: 10),
+                _BenefitRow('Priority responses and upcoming temple features'),
+              ],
+            ),
+            const SizedBox(height: 28),
+            AnkhButton(
+              label: 'Annual pilgrimage • \$69.99',
+              icon: Icons.workspace_premium_outlined,
+              expand: true,
+              onPressed: () async {
+                final success = await onSelectPlan(true);
+                if (!context.mounted) return;
+                Navigator.of(context).pop(success);
+              },
+            ),
+            const SizedBox(height: 12),
+            GhostButton(
+              label: 'Monthly journey • \$9.99',
+              icon: Icons.calendar_month_outlined,
+              expand: true,
+              onPressed: () async {
+                final success = await onSelectPlan(false);
+                if (!context.mounted) return;
+                Navigator.of(context).pop(success);
+              },
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Maybe later'),
+              ),
+            ),
+          ],
         ),
-        FilledButton(
-          onPressed: () async {
-            final success = await onSelectPlan(false);
-            if (!context.mounted) return;
-            Navigator.of(context).pop(success);
-          },
-          child: const Text('Monthly \$9.99'),
-        ),
-        FilledButton.tonal(
-          onPressed: () async {
-            final success = await onSelectPlan(true);
-            if (!context.mounted) return;
-            Navigator.of(context).pop(success);
-          },
-          child: const Text('Annual \$69.99'),
+      ),
+    );
+  }
+}
+
+class _BenefitRow extends StatelessWidget {
+  const _BenefitRow(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        const Icon(Icons.auto_awesome, size: 18, color: AppColors.maatGold),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.papyrus,
+            ),
+          ),
         ),
       ],
     );

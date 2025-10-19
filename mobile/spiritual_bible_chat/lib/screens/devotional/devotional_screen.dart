@@ -7,6 +7,10 @@ import 'package:http/http.dart' as http;
 import '../../exceptions/paywall_required_exception.dart';
 import '../../models/onboarding_profile.dart';
 import '../../utils/api_base.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ankh_button.dart';
+import '../../widgets/ghost_button.dart';
+import '../../widgets/glass_card.dart';
 
 class DevotionalScreen extends StatefulWidget {
   const DevotionalScreen({
@@ -80,7 +84,9 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
     await Clipboard.setData(ClipboardData(text: devotional));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Copied devotional to clipboard.')),
+      const SnackBar(
+        content: Text('Devotional copied. Share when you feel led.'),
+      ),
     );
   }
 
@@ -128,46 +134,70 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
           return Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  widget.verseReference,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.verseText,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontStyle: FontStyle.italic,
+                GlassCard(
+                  padding: const EdgeInsets.all(24),
+                  backgroundGradient: AppGradients.aurora,
+                  borderColor: Colors.transparent,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.verseReference,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.obsidian,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.verseText,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.obsidian.withOpacity(0.85),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: SelectableText(
-                      devotional,
-                      style: theme.textTheme.bodyLarge,
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(24),
+                    backgroundColor: AppColors.onyx.withOpacity(0.58),
+                    child: SingleChildScrollView(
+                      child: SelectableText(
+                        devotional,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          height: 1.6,
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    FilledButton.icon(
+                    AnkhButton(
+                      label: 'Copy devotional',
+                      icon: Icons.copy_outlined,
                       onPressed: () => _copyToClipboard(devotional),
-                      icon: const Icon(Icons.copy_outlined),
-                      label: const Text('Copy'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 22,
+                        vertical: 16,
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    OutlinedButton.icon(
+                    GhostButton(
+                      label: 'Request another',
+                      icon: Icons.refresh,
                       onPressed: () {
                         setState(() {
                           _future = _fetchDevotional();
                         });
                       },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Regenerate'),
                     ),
                   ],
                 ),
@@ -185,11 +215,28 @@ class _DevotionalLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: CircularProgressIndicator(),
+    final theme = Theme.of(context);
+    return Center(
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        backgroundColor: AppColors.onyx.withOpacity(0.65),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 42,
+              height: 42,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.maatGold),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Gathering today’s devotional...',
+              style: theme.textTheme.bodyMedium,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -210,42 +257,60 @@ class _DevotionalError extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isPaywall = error is PaywallRequiredException;
-    final description = error?.toString() ?? 'Unknown error';
+    final friendlyDescription = isPaywall
+        ? (error as PaywallRequiredException).message
+        : 'The devotional well is momentarily unavailable. Please try again soon.';
+    final title =
+        isPaywall ? 'Premium devotionals await' : 'Devotional unavailable';
     final icon = isPaywall ? Icons.workspace_premium_outlined : Icons.wifi_off;
-    final iconColor =
-        isPaywall ? theme.colorScheme.primary : theme.colorScheme.error;
 
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: GlassCard(
+        padding: const EdgeInsets.all(24),
+        backgroundColor: AppColors.onyx.withOpacity(0.6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: iconColor),
-            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isPaywall ? AppGradients.aurora : null,
+                color: isPaywall ? null : AppColors.lotusRose.withOpacity(0.2),
+              ),
+              child: Icon(
+                icon,
+                size: 32,
+                color: isPaywall ? AppColors.obsidian : AppColors.lotusRose,
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
-              isPaywall ? 'Premium required' : 'Unable to load devotional',
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              description,
+              friendlyDescription,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.quartz,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (isPaywall && onShowPaywall != null)
-              FilledButton.icon(
+              AnkhButton(
+                label: 'Upgrade to Premium',
+                icon: Icons.workspace_premium_outlined,
                 onPressed: onShowPaywall,
-                icon: const Icon(Icons.workspace_premium_outlined),
-                label: const Text('Upgrade to Premium'),
               )
             else
-              FilledButton.icon(
+              GhostButton(
+                label: 'Try again',
+                icon: Icons.refresh,
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Try again'),
               ),
           ],
         ),
