@@ -1636,14 +1636,6 @@ class _ChatScreenState extends State<_ChatScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Begin with what’s on your heart — a question, a concern, a praise. I’ll respond with scripture-rooted wisdom -OMEGA',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.quartz,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 20),
             Expanded(
               child: GlassCard(
                 padding: _messages.isEmpty
