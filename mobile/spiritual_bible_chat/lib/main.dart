@@ -30,6 +30,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'services/paywall_service.dart';
 import 'data/daily_verses.dart';
+import 'data/legal_content.dart';
 import 'theme/app_theme.dart';
 
 String describeGoal(SpiritualGoal goal) {
@@ -1938,22 +1939,28 @@ class _ProfileScreen extends StatelessWidget {
   final PremiumState premium;
   final Future<void> Function() onManageSubscription;
 
-  Future<void> _launchPolicy(BuildContext context, String slug) async {
-    final Map<String, Uri> links = {
-      'privacy': Uri.parse('https://spiritualbiblechat.com/privacy'),
-      'terms': Uri.parse('https://spiritualbiblechat.com/terms'),
-    };
-    final uri = links[slug];
-    if (uri == null) return;
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!context.mounted) return;
-    if (!launched) {
-      final label = slug == 'privacy' ? 'privacy policy' : 'terms of service';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'We couldn’t open the $label just now. Please try again later.'),
+  Future<void> _showLegalDocument(
+    BuildContext context,
+    LegalDocumentType type,
+  ) async {
+    try {
+      final content = await LegalContent.document(type);
+      if (!context.mounted) return;
+      final title = type == LegalDocumentType.privacy
+          ? 'Privacy Policy'
+          : 'Terms of Service';
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => LegalDocumentScreen(
+            title: title,
+            content: content,
+          ),
         ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to load document: $error')),
       );
     }
   }
@@ -2154,12 +2161,18 @@ class _ProfileScreen extends StatelessWidget {
           _ProfileSettingTile(
             icon: Icons.description_outlined,
             title: 'Privacy policy',
-            onTap: () => _launchPolicy(context, 'privacy'),
+            onTap: () => _showLegalDocument(
+              context,
+              LegalDocumentType.privacy,
+            ),
           ),
           _ProfileSettingTile(
             icon: Icons.security_outlined,
             title: 'Terms of service',
-            onTap: () => _launchPolicy(context, 'terms'),
+            onTap: () => _showLegalDocument(
+              context,
+              LegalDocumentType.terms,
+            ),
           ),
           _ProfileSettingTile(
             icon: Icons.help_outline,
@@ -2240,6 +2253,37 @@ class _ProfileSettingTile extends StatelessWidget {
                   ),
                 );
               },
+        ),
+      ),
+    );
+  }
+}
+
+class LegalDocumentScreen extends StatelessWidget {
+  const LegalDocumentScreen({required this.title, required this.content});
+
+  final String title;
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: SelectableText(
+            content,
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+          ),
         ),
       ),
     );

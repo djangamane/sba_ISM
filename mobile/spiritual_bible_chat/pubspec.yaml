@@ -72,6 +72,7 @@ flutter:
     - assets/images/temple.png
     - assets/images/omega_favicon.png
     - assets/daily_verses.json
+    - assets/privacy_and_term.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:

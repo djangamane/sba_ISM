@@ -1,0 +1,115 @@
+Privacy Policy — The Spiritualist Bible
+1. Overview
+
+The Spiritualist Bible (“we,” “us,” or “our”) respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our app, website, or related services.
+
+2. Information We Collect
+
+Account Information: When you create an account (via email or third-party providers like Supabase), we collect basic profile data such as your name and email address.
+
+Usage Data: We collect anonymized data such as app interactions, reflection streaks, and session timestamps to improve your experience.
+
+Payment Information: Subscription payments are securely handled through Stripe. We do not store or have access to your full payment details.
+
+Content You Provide: Reflections, journal entries, or chat inputs may be processed by our AI system (Sanctuary.Chat) to deliver personalized insights.
+
+3. How We Use Your Data
+
+We use your information to:
+
+Provide daily verses, reflections, and AI-guided insights.
+
+Maintain your spiritual journey streaks and reminders.
+
+Offer premium features and subscription services.
+
+Improve our product through anonymized analytics.
+
+We do not sell, trade, or share your personal data with third parties for profit.
+
+4. Data Security
+
+Your data is stored securely using Supabase (for authentication and storage) and encrypted transmission (SSL/TLS). Only anonymized data is used for app optimization.
+
+5. AI Conversations
+
+All chats with Sanctuary.Chat are private and not shared externally. Conversations may be analyzed anonymously to improve AI understanding and accuracy.
+
+6. Your Rights
+
+You have the right to:
+
+Access or delete your data.
+
+Opt out of email or push notifications.
+
+Cancel your subscription at any time.
+
+Requests can be sent to janga@planetarychess.com
+.
+
+7. Children’s Privacy
+
+The app is intended for users aged 16 and above. We do not knowingly collect data from minors.
+
+8. Changes to This Policy
+
+We may update this policy periodically. Continued use of the app implies consent to the updated version.
+
+9. Contact
+
+For privacy inquiries:
+📧 janga@planetarychess.com
+
+Terms of Service — The Spiritualist Bible
+1. Acceptance of Terms
+
+By using The Spiritualist Bible app, you agree to these Terms of Service and our Privacy Policy. If you do not agree, you must discontinue use.
+
+2. Purpose
+
+The Spiritualist Bible is a spiritual reflection and consciousness study tool. It provides daily verses, reflections, and AI-guided insights inspired by Neville Goddard, Ancient Egyptian philosophy, and other spiritual texts.
+
+We do not claim religious authority or provide professional counseling, medical, or financial advice.
+
+3. Subscriptions and Payments
+
+Subscriptions are billed securely via Stripe.
+
+You may cancel your subscription anytime through your account settings.
+
+Refunds are handled in accordance with applicable consumer laws.
+
+4. Use of AI
+
+Our AI, Sanctuary.Chat, is designed to offer metaphysical and spiritual interpretations. It does not replace personal discernment, therapy, or religious practice.
+
+By using the AI chat, you acknowledge that all responses are educational and spiritual in nature.
+
+5. Intellectual Property
+
+All app content, including UI, AI-generated text, and graphics, are the property of The Spiritualist Bible and may not be copied, redistributed, or used for commercial purposes without written consent.
+
+6. User Conduct
+
+You agree not to:
+
+Upload harmful or abusive content.
+
+Attempt to hack, reverse-engineer, or misuse the system.
+
+Impersonate others or share misleading information.
+
+Violation may result in account suspension or termination.
+
+7. Limitation of Liability
+
+The Spiritualist Bible and its creators are not liable for any damages arising from the use or inability to use the app. Spiritual interpretations are subjective; users are responsible for how they apply them.
+
+8. Changes to Terms
+
+We reserve the right to update these Terms at any time. Material changes will be communicated via in-app notice or email.
+
+9. Governing Law
+
+These Terms are governed by the laws of the United States of America (Texas jurisdiction) unless otherwise specified.
