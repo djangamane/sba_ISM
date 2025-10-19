@@ -18,7 +18,8 @@ class PaywallService {
     }
   }
 
-  Future<Uri?> createStripeCheckoutSession({String planId = 'premium_monthly'}) async {
+  Future<Uri?> createStripeCheckoutSession(
+      {String planId = 'premium_monthly'}) async {
     final uri = Uri.parse('${apiBaseUrl()}/api/v1/paywall/stripe-checkout');
     final response = await http.post(
       uri,

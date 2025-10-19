@@ -5,13 +5,13 @@ import '../models/onboarding_profile.dart';
 String reminderLabel(ReminderSlot slot) {
   switch (slot) {
     case ReminderSlot.morning:
-      return 'Morning inspiration';
+      return 'Sunrise centering';
     case ReminderSlot.midday:
       return 'Midday reset';
     case ReminderSlot.evening:
-      return 'Evening wind-down';
+      return 'Twilight wind-down';
     case ReminderSlot.gentle:
-      return 'Gentle reminder if you miss the rhythm';
+      return 'Only if I slip the rhythm';
   }
 }
 
@@ -48,7 +48,7 @@ DateTime nextReminderDate(ReminderSlot slot, {DateTime? from}) {
 
 String describeReminderDate(BuildContext context, DateTime? dateTime) {
   if (dateTime == null) {
-    return 'No reminder scheduled';
+    return 'No reminder set yet';
   }
   final localizations = MaterialLocalizations.of(context);
   final timeString = localizations.formatTimeOfDay(

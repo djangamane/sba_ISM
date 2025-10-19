@@ -218,7 +218,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                         await widget.preferences.saveProfile(profile);
                         widget.onCompleted(profile);
                       },
-                      child: const Text('Skip for now'),
+                      child: const Text('I’ll set this later'),
                     ),
                   const Spacer(),
                   FilledButton(

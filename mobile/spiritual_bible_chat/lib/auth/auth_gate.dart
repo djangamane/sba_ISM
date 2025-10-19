@@ -10,8 +10,8 @@ class AuthGate extends StatefulWidget {
 
   final Widget child;
 
-  static _AuthGateState? of(BuildContext context) {
-    return context.findAncestorStateOfType<_AuthGateState>();
+  static AuthGateState? of(BuildContext context) {
+    return context.findAncestorStateOfType<AuthGateState>();
   }
 
   static void requestSignIn(BuildContext context) {
@@ -23,10 +23,10 @@ class AuthGate extends StatefulWidget {
   }
 
   @override
-  State<AuthGate> createState() => _AuthGateState();
+  State<AuthGate> createState() => AuthGateState();
 }
 
-class _AuthGateState extends State<AuthGate> {
+class AuthGateState extends State<AuthGate> {
   late final SupabaseClient _client;
   late final StreamSubscription<AuthState> _authSub;
   bool _continueAsGuest = false;

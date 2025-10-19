@@ -88,8 +88,6 @@ ThemeData buildAppTheme() {
     onPrimary: AppColors.obsidian,
     secondary: AppColors.aetherBlue,
     onSecondary: AppColors.obsidian,
-    background: AppColors.obsidian,
-    onBackground: AppColors.papyrus,
     surface: AppColors.onyx.withOpacity(0.9),
     onSurface: AppColors.papyrus,
     error: AppColors.lotusRose,

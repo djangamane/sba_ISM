@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -34,69 +34,69 @@ import 'theme/app_theme.dart';
 String describeGoal(SpiritualGoal goal) {
   switch (goal) {
     case SpiritualGoal.stressRelief:
-      return 'Find peace & stress relief';
+      return 'Soothe stress & breathe easier';
     case SpiritualGoal.learnBible:
-      return 'Deepen understanding of scripture';
+      return 'Deepen scripture understanding';
     case SpiritualGoal.manifestation:
-      return 'Manifestation & Neville’s teachings';
+      return 'Imagine with Neville';
     case SpiritualGoal.dailyInspiration:
-      return 'Daily inspiration & encouragement';
+      return 'Daily spark of encouragement';
     case SpiritualGoal.other:
-      return 'A unique spiritual journey';
+      return 'A path uniquely yours';
   }
 }
 
 String goalHeadline(SpiritualGoal goal) {
   switch (goal) {
     case SpiritualGoal.stressRelief:
-      return 'Let’s slow your breathing and rediscover calm.';
+      return 'Let’s slow your breath and welcome ease.';
     case SpiritualGoal.learnBible:
-      return 'Ready to uncover fresh insight in scripture today?';
+      return 'Ready to open scripture for fresh revelation?';
     case SpiritualGoal.manifestation:
-      return 'Let’s imagine the good you desire into being.';
+      return 'Let’s imagine boldly with Neville’s lens.';
     case SpiritualGoal.dailyInspiration:
-      return 'A gentle spark is here to brighten your day.';
+      return 'A gentle spark is here to brighten your spirit.';
     case SpiritualGoal.other:
-      return 'We’re honored to walk alongside your path.';
+      return 'Your path is sacred—I’m honored to walk with you.';
   }
 }
 
 String goalSubtext(SpiritualGoal goal) {
   switch (goal) {
     case SpiritualGoal.stressRelief:
-      return 'A short reflection curated to steady mind and body awaits you.';
+      return 'We’ll soften the nervous system with a calm verse and grounding practice.';
     case SpiritualGoal.learnBible:
-      return 'Today’s guidance leans into context and meaning behind beloved verses.';
+      return 'Today’s guidance unwraps context and meaning woven through beloved passages.';
     case SpiritualGoal.manifestation:
-      return 'We’ll weave Neville’s imagination practices into today’s prompts.';
+      return 'We’ll blend scripture with Neville’s creative prayer to shape what you’re calling in.';
     case SpiritualGoal.dailyInspiration:
-      return 'A verse and affirmation are ready to uplift your spirit.';
+      return 'A verse, affirmation, and gentle prompt are waiting to lift your day.';
     case SpiritualGoal.other:
-      return 'Tailored reflections will adapt as we learn more from your check-ins.';
+      return 'Each check-in teaches me your rhythm so the reflections stay lovingly tailored.';
   }
 }
 
 String familiarityLabel(NevilleFamiliarity familiarity) {
   switch (familiarity) {
     case NevilleFamiliarity.none:
-      return 'New to Neville Goddard';
+      return 'New to Neville’s teachings';
     case NevilleFamiliarity.curious:
-      return 'Exploring Neville’s teachings';
+      return 'Exploring Neville’s imagination practice';
     case NevilleFamiliarity.fan:
-      return 'Neville devotee';
+      return 'Devoted to Neville’s wisdom';
   }
 }
 
 String contentPreferenceLabel(ContentPreference preference) {
   switch (preference) {
     case ContentPreference.directScripture:
-      return 'Scripture';
+      return 'Scripture passages';
     case ContentPreference.practicalAdvice:
-      return 'Practical wisdom';
+      return 'Grounded life wisdom';
     case ContentPreference.guidedPrayer:
-      return 'Guided prayer';
+      return 'Guided prayer & meditation';
     case ContentPreference.affirmations:
-      return 'Affirmations';
+      return 'Affirmations & declarations';
   }
 }
 
@@ -105,7 +105,7 @@ Future<void> main() async {
   if (!kIsWeb) {
     await dotenv.load(fileName: '.env');
   } else {
-    final envMap = const {
+    const envMap = {
       'SUPABASE_URL': String.fromEnvironment('SUPABASE_URL', defaultValue: ''),
       'SUPABASE_ANON_KEY':
           String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: ''),
@@ -326,7 +326,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
             final success =
                 await _premiumService.startPurchaseFlow(annual: annual);
             if (!success) {
-              throw Exception('Checkout cancelled or blocked.');
+              throw Exception('Checkout didn’t complete. Please try again.');
             }
             await _refreshFromSupabase();
             await _premiumService.refreshStatus();
@@ -485,12 +485,11 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         onSignOut: () async {
           await Supabase.instance.client.auth.signOut();
           await _premiumService.logOut();
-          if (mounted) {
-            setState(() {
-              _profile = null;
-              _premiumState = PremiumState.initial();
-            });
-          }
+          if (!mounted) return;
+          setState(() {
+            _profile = null;
+            _premiumState = PremiumState.initial();
+          });
           AuthGate.continueAsGuest(context);
         },
         onSignInRequested: () => AuthGate.requestSignIn(context),
@@ -510,15 +509,15 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         '/payment/success': (_) => const _CheckoutResultScreen(
               title: 'You’re all set!',
               message:
-                  'Premium access is unlocked. Keep this tab open and return to the Spiritual Bible Chat window to continue your journey.',
-              headline: 'Premium Unlocked',
+                  'Premium access is unlocked. Keep this tab open and return when you’re ready to continue the inner work.',
+              headline: 'Premium unlocked',
               accentIcon: Icons.star_rounded,
-              actionLabel: 'Back to app',
+              actionLabel: 'Return to temple',
             ),
         '/payment/canceled': (_) => const _CheckoutResultScreen(
               title: 'Maybe next time?',
               message:
-                  'No charge was made. When you’re ready, your premium pilgrimage awaits—unlimited conversations, devotionals, and sacred practices.',
+                  'No charge was made. When you’re ready, the premium temple awaits—unlimited conversations, devotionals, and sacred practices.',
               headline: 'Your seat is still open',
               accentIcon: Icons.auto_fix_high_rounded,
               actionLabel: 'Return & upgrade',
@@ -604,16 +603,19 @@ class _CheckoutResultScreen extends StatelessWidget {
                 style: theme.textTheme.bodyLarge,
               ),
               const Spacer(),
-              if (promptUpgrade)
-                FilledButton(
+              if (promptUpgrade) ...[
+                AnkhButton(
+                  label: actionLabel ?? 'Return & upgrade',
                   onPressed: () => Navigator.of(context).maybePop(),
-                  child: Text(actionLabel ?? 'Return to upgrade'),
-                )
-              else
-                FilledButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  child: Text(actionLabel ?? 'Return to app'),
+                  expand: true,
                 ),
+              ] else ...[
+                AnkhButton(
+                  label: actionLabel ?? 'Return to temple',
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  expand: true,
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),
@@ -1147,7 +1149,7 @@ class _VerseOfTheDayCard extends StatelessWidget {
               ),
               if (!completed)
                 GhostButton(
-                  label: 'Mark complete',
+                  label: 'Count today',
                   icon: Icons.check_circle_outline,
                   onPressed: () async {
                     await onMarkComplete();
@@ -1155,7 +1157,8 @@ class _VerseOfTheDayCard extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                              'Today’s reflection is counted. Keep shining.'),
+                            'Today’s reflection is counted. Keep shining.',
+                          ),
                         ),
                       );
                     }
@@ -1164,7 +1167,7 @@ class _VerseOfTheDayCard extends StatelessWidget {
               else
                 const QuickActionChip(
                   icon: Icons.check_circle,
-                  label: 'Completed today',
+                  label: 'Counted today',
                 ),
             ],
           ),
@@ -1209,7 +1212,7 @@ class _QuickActionsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Continue your practice',
+            'Continue your inner work',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -1228,17 +1231,17 @@ class _QuickActionsSection extends StatelessWidget {
             children: [
               QuickActionChip(
                 icon: Icons.auto_mode,
-                label: 'Resume chat',
+                label: 'Resume sacred chat',
                 onPressed: onResumeChat,
               ),
               QuickActionChip(
                 icon: Icons.book_outlined,
-                label: 'Daily devotional',
+                label: 'Open devotional',
                 onPressed: onOpenDevotional,
               ),
               QuickActionChip(
                 icon: Icons.notifications_active_outlined,
-                label: 'Adjust reminders',
+                label: 'Refine reminders',
                 onPressed: onAdjustReminders,
               ),
             ],
@@ -1289,7 +1292,7 @@ class _ChatEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Share a question, a worry, or a gratitude. The assistant responds with scripture-grounded, Neville-honoring insight.',
+            'Offer a question, a tension, or a gratitude. I’ll reply with scripture-rooted, Neville-guided insight.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: AppColors.quartz,
@@ -1297,7 +1300,7 @@ class _ChatEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           GhostButton(
-            label: 'Begin a reflection',
+            label: 'Open the channel',
             icon: Icons.edit_note_outlined,
             onPressed: onFocusInput,
           ),
@@ -1389,12 +1392,13 @@ class _ChatScreenState extends State<_ChatScreen> {
 
       if (response.statusCode >= 400) {
         if (response.statusCode == 401) {
-          throw Exception('Please sign in to continue this conversation.');
+          throw Exception('Sign in to continue this conversation.');
         }
         if (response.statusCode == 402) {
           final Map<String, dynamic> body = jsonDecode(response.body);
           throw PaywallRequiredException(
-            body['error'] as String? ?? 'Upgrade required to continue.',
+            body['error'] as String? ??
+                'Premium unlock required to continue the dialogue.',
           );
         }
         throw Exception('Server responded with ${response.statusCode}');
@@ -1426,7 +1430,8 @@ class _ChatScreenState extends State<_ChatScreen> {
             ),
           );
         });
-        if (context.mounted && widget.onPaywall != null) {
+        if (!mounted) return;
+        if (widget.onPaywall != null) {
           await widget.onPaywall!(context, error.message);
         }
       } else {
@@ -1439,14 +1444,13 @@ class _ChatScreenState extends State<_ChatScreen> {
             ),
           );
         });
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text('Connection dipped for a moment. Please try once more.'),
-            ),
-          );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Connection dipped for a moment. Please try once more.'),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -1463,7 +1467,7 @@ class _ChatScreenState extends State<_ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Spiritual Assistant',
+          'Inner Temple Guide',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -1814,6 +1818,7 @@ class _ProfileScreen extends StatelessWidget {
     final uri = links[slug];
     if (uri == null) return;
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!context.mounted) return;
     if (!launched) {
       final label = slug == 'privacy' ? 'privacy policy' : 'terms of service';
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1834,6 +1839,7 @@ class _ProfileScreen extends StatelessWidget {
       },
     );
     final launched = await launchUrl(uri);
+    if (!context.mounted) return;
     if (!launched) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1962,13 +1968,13 @@ class _ProfileScreen extends StatelessWidget {
               leading:
                   const Icon(Icons.quiz_outlined, color: AppColors.maatGold),
               title: Text(
-                'Retake onboarding quiz',
+                'Revisit onboarding journey',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
               subtitle: Text(
-                'Refresh your spiritual focus & preferences.',
+                'Refresh your intention and practice preferences.',
                 style: theme.textTheme.bodySmall,
               ),
               trailing:
@@ -1988,7 +1994,7 @@ class _ProfileScreen extends StatelessWidget {
           const SizedBox(height: 24),
           _ProfileSettingTile(
             icon: Icons.notifications_active_outlined,
-            title: 'Notification schedule',
+            title: 'Sacred reminders',
             subtitle:
                 '${reminderLabel(profile.reminderSlot)} • ${describeReminderDate(context, nextReminder)}',
             onTap: onAdjustReminders,
@@ -1997,7 +2003,7 @@ class _ProfileScreen extends StatelessWidget {
             icon: profile.wantsStreaks
                 ? Icons.local_fire_department
                 : Icons.self_improvement,
-            title: 'Streak tracking',
+            title: 'Streak rhythm',
             subtitle: profile.wantsStreaks
                 ? 'Badges and streak celebrations are enabled.'
                 : 'Gentle mode active — no streak pressure.',
@@ -2008,7 +2014,7 @@ class _ProfileScreen extends StatelessWidget {
                 premium.isPremium ? 'Premium unlocked' : 'Upgrade to Premium',
             subtitle: premium.isPremium
                 ? 'Thank you for supporting the mission.'
-                : 'Unlock unlimited chat and devotional content.',
+                : 'Unlock limitless sacred conversations and devotionals.',
             onTap: premium.isPremium
                 ? null
                 : () => onShowPaywall(
@@ -2029,8 +2035,8 @@ class _ProfileScreen extends StatelessWidget {
           ),
           _ProfileSettingTile(
             icon: Icons.help_outline,
-            title: 'Need help? Found a bug?',
-            subtitle: 'Reach out to our support team.',
+            title: 'Need support? Notice something off?',
+            subtitle: 'Reach out and we’ll respond with care.',
             onTap: () => _contactSupport(context),
           ),
           const SizedBox(height: 20),
@@ -2059,14 +2065,12 @@ class _ProfileSettingTile extends StatelessWidget {
     required this.icon,
     required this.title,
     this.subtitle,
-    this.isDestructive = false,
     this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String? subtitle;
-  final bool isDestructive;
   final VoidCallback? onTap;
 
   @override
@@ -2082,13 +2086,12 @@ class _ProfileSettingTile extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           leading: Icon(
             icon,
-            color: isDestructive ? theme.colorScheme.error : AppColors.maatGold,
+            color: AppColors.maatGold,
           ),
           title: Text(
             title,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: isDestructive ? theme.colorScheme.error : null,
             ),
           ),
           subtitle: subtitle != null

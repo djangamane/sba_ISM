@@ -61,12 +61,13 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
 
     if (response.statusCode >= 400) {
       if (response.statusCode == 401) {
-        throw Exception('Please sign in to read devotional content.');
+        throw Exception('Sign in to receive devotional content.');
       }
       if (response.statusCode == 402) {
         final Map<String, dynamic> body = jsonDecode(response.body);
         throw PaywallRequiredException(
-          body['error'] as String? ?? 'Upgrade required to read devotionals.',
+          body['error'] as String? ??
+              'Premium unlock required to read devotionals.',
         );
       }
       throw Exception('Server responded with status ${response.statusCode}');
@@ -302,13 +303,13 @@ class _DevotionalError extends StatelessWidget {
             const SizedBox(height: 20),
             if (isPaywall && onShowPaywall != null)
               AnkhButton(
-                label: 'Upgrade to Premium',
+                label: 'Unlock Premium access',
                 icon: Icons.workspace_premium_outlined,
                 onPressed: onShowPaywall,
               )
             else
               GhostButton(
-                label: 'Try again',
+                label: 'Refresh devotional',
                 icon: Icons.refresh,
                 onPressed: onRetry,
               ),

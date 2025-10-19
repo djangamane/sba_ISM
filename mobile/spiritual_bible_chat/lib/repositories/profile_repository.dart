@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/onboarding_profile.dart';
-import '../utils/reminders.dart';
 
 const Map<SpiritualGoal, String> _goalToDb = {
   SpiritualGoal.stressRelief: 'stress_relief',

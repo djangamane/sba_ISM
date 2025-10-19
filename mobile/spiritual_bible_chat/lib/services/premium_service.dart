@@ -25,18 +25,22 @@ class PremiumService {
   Future<void> configure() async {
     // No-op for web build; Stripe configuration handled via backend.
     final stripeKey = dotenv.maybeGet('STRIPE_PUBLISHABLE_KEY') ??
-        const String.fromEnvironment('STRIPE_PUBLISHABLE_KEY', defaultValue: '');
+        const String.fromEnvironment('STRIPE_PUBLISHABLE_KEY',
+            defaultValue: '');
     if (stripeKey.isEmpty) {
       debugPrint(
           'Stripe publishable key missing. Premium checkout will use demo upgrade fallback.');
     }
 
     final monthlyUrl = dotenv.maybeGet('STRIPE_CHECKOUT_MONTHLY') ??
-        const String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY', defaultValue: '');
+        const String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY',
+            defaultValue: '');
     final annualUrl = dotenv.maybeGet('STRIPE_CHECKOUT_ANNUAL') ??
-        const String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL', defaultValue: '');
+        const String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL',
+            defaultValue: '');
 
-    _monthlyCheckoutUri = monthlyUrl.isNotEmpty ? Uri.tryParse(monthlyUrl) : null;
+    _monthlyCheckoutUri =
+        monthlyUrl.isNotEmpty ? Uri.tryParse(monthlyUrl) : null;
     _annualCheckoutUri = annualUrl.isNotEmpty ? Uri.tryParse(annualUrl) : null;
   }
 
@@ -78,20 +82,25 @@ class PremiumService {
       if (apiCheckoutUrl == null) {
         throw Exception('Checkout URL unavailable.');
       }
-      final mode = kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication;
+      final mode =
+          kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication;
       final launched = await launchUrl(apiCheckoutUrl, mode: mode);
       if (!launched) {
-        throw Exception('Unable to open checkout window. Please disable pop-up blockers and try again.');
+        throw Exception(
+            'Unable to open checkout window. Please disable pop-up blockers and try again.');
       }
       return true;
     } catch (error) {
       debugPrint('Backend checkout failed: $error');
       final fallbackUrl = annual ? _annualCheckoutUri : _monthlyCheckoutUri;
       if (fallbackUrl != null) {
-        final mode = kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication;
+        final mode = kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication;
         final launched = await launchUrl(fallbackUrl, mode: mode);
         if (!launched) {
-          throw Exception('Unable to open checkout window. Please disable pop-up blockers and try again.');
+          throw Exception(
+              'Unable to open checkout window. Please disable pop-up blockers and try again.');
         }
         return true;
       }
