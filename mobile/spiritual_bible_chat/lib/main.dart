@@ -1457,11 +1457,6 @@ class _ChatEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          GhostButton(
-            label: 'Open the channel',
-            icon: Icons.edit_note_outlined,
-            onPressed: onFocusInput,
-          ),
         ],
       ),
     );
