@@ -826,6 +826,14 @@ class _AppShellState extends State<_AppShell> {
           onReflectPressed: _handleReflect,
           onMarkComplete: _registerActivity,
           onAdjustReminders: _showReminderSheet,
+          onResumeChat: () {
+            setState(() {
+              _currentIndex = 1;
+            });
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _chatKey.currentState?.focusInput();
+            });
+          },
           streak: streak,
           nextReminder: widget.nextReminder,
           onShowPaywall: widget.onShowPaywall,
@@ -906,6 +914,7 @@ class _TodayScreen extends StatelessWidget {
     required this.onReflectPressed,
     required this.onMarkComplete,
     required this.onAdjustReminders,
+    required this.onResumeChat,
     required this.streak,
     required this.nextReminder,
     required this.onShowPaywall,
@@ -916,6 +925,7 @@ class _TodayScreen extends StatelessWidget {
       onReflectPressed;
   final Future<void> Function() onMarkComplete;
   final Future<void> Function() onAdjustReminders;
+  final VoidCallback onResumeChat;
   final StreakState streak;
   final DateTime? nextReminder;
   final Future<void> Function(BuildContext context, String message)
@@ -975,6 +985,7 @@ class _TodayScreen extends StatelessWidget {
                     );
                   },
                   onAdjustReminders: () => onAdjustReminders(),
+                  onResumeChat: onResumeChat,
                 ),
               ],
             ),
@@ -1191,12 +1202,14 @@ class _QuickActionsSection extends StatelessWidget {
     required this.profile,
     required this.onOpenDevotional,
     required this.onAdjustReminders,
+    required this.onResumeChat,
   });
 
   final ThemeData theme;
   final OnboardingProfile profile;
   final VoidCallback onOpenDevotional;
   final VoidCallback onAdjustReminders;
+  final VoidCallback onResumeChat;
 
   @override
   Widget build(BuildContext context) {
@@ -1231,9 +1244,10 @@ class _QuickActionsSection extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            const _QuickActionChip(
+            _QuickActionChip(
               icon: Icons.auto_mode,
               label: 'Resume chat',
+              onPressed: onResumeChat,
             ),
             _QuickActionChip(
               icon: Icons.book_outlined,
@@ -1304,11 +1318,13 @@ class _ChatScreenState extends State<_ChatScreen> {
   final List<_ChatMessage> _messages = <_ChatMessage>[];
   bool _isSending = false;
   String? _threadId;
+  final FocusNode _inputFocusNode = FocusNode();
 
   @override
   void dispose() {
     _inputController.dispose();
     _listController.dispose();
+    _inputFocusNode.dispose();
     super.dispose();
   }
 
@@ -1322,6 +1338,11 @@ class _ChatScreenState extends State<_ChatScreen> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
+  }
+
+  void focusInput() {
+    if (!mounted) return;
+    FocusScope.of(context).requestFocus(_inputFocusNode);
   }
 
   Future<void> sendPrompt(String text) =>
@@ -1516,6 +1537,7 @@ class _ChatScreenState extends State<_ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _inputController,
+                    focusNode: _inputFocusNode,
                     enabled: !_isSending,
                     minLines: 1,
                     maxLines: 4,
