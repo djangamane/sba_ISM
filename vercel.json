@@ -3,6 +3,10 @@
     {
       "source": "/payment/(success|canceled)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/paywall/(success|canceled)",
+      "destination": "/index.html"
     }
   ]
 }
