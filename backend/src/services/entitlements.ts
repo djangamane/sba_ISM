@@ -2,6 +2,7 @@ import { supabaseAdmin, isSupabaseAdminAvailable } from './supabaseClient';
 
 const FREE_CHAT_DAILY_LIMIT = 3;
 const FREE_DEVOTIONAL_DAILY_LIMIT = 1;
+const VIEW_EVENT_PREFIX = 'paywall_view';
 
 interface AccessResult {
   allowed: boolean;

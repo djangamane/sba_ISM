@@ -522,14 +522,21 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       darkTheme: darkTheme,
       routes: {
         '/payment/success': (_) => const _CheckoutResultScreen(
-              title: 'Thank you!',
+              title: 'You’re all set!',
               message:
-                  'Payment received. You now have unlimited chats and devotionals. Return to the app to continue your journey.',
+                  'Premium access is unlocked. Keep this tab open and return to the Spiritual Bible Chat window to continue your journey.',
+              headline: 'Premium Unlocked',
+              accentIcon: Icons.star_rounded,
+              actionLabel: 'Back to app',
             ),
         '/payment/canceled': (_) => const _CheckoutResultScreen(
-              title: 'Checkout canceled',
+              title: 'Maybe next time?',
               message:
-                  'No worries—your card was not charged. You can retry the upgrade whenever you’re ready.',
+                  'No charge was made. When you’re ready, your premium pilgrimage awaits—unlimited conversations, devotionals, and sacred practices.',
+              headline: 'Your seat is still open',
+              accentIcon: Icons.auto_fix_high_rounded,
+              actionLabel: 'Return & upgrade',
+              promptUpgrade: true,
             ),
       },
       home: AuthGate(
@@ -540,10 +547,21 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
 }
 
 class _CheckoutResultScreen extends StatelessWidget {
-  const _CheckoutResultScreen({required this.title, required this.message});
+  const _CheckoutResultScreen({
+    required this.title,
+    required this.message,
+    required this.headline,
+    required this.accentIcon,
+    this.actionLabel,
+    this.promptUpgrade = false,
+  });
 
   final String title;
   final String message;
+  final String headline;
+  final IconData accentIcon;
+  final String? actionLabel;
+  final bool promptUpgrade;
 
   @override
   Widget build(BuildContext context) {
@@ -555,16 +573,44 @@ class _CheckoutResultScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back),
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.close),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.secondary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Icon(
+                  accentIcon,
+                  color: theme.colorScheme.onPrimary,
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
-                title,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                headline,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 16),
               Text(
@@ -572,10 +618,16 @@ class _CheckoutResultScreen extends StatelessWidget {
                 style: theme.textTheme.bodyLarge,
               ),
               const Spacer(),
-              FilledButton(
-                onPressed: () => Navigator.of(context).maybePop(),
-                child: const Text('Return to app'),
-              ),
+              if (promptUpgrade)
+                FilledButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: Text(actionLabel ?? 'Return to upgrade'),
+                )
+              else
+                FilledButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: Text(actionLabel ?? 'Return to app'),
+                ),
               const SizedBox(height: 24),
             ],
           ),
