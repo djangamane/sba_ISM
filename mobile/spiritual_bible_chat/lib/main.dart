@@ -1740,7 +1740,7 @@ class _ProfileScreen extends StatelessWidget {
   Future<void> _contactSupport(BuildContext context) async {
     final uri = Uri(
       scheme: 'mailto',
-      path: 'support@spiritualbiblechat.com',
+      path: 'janga.bussaja@gmail.com',
       queryParameters: {
         'subject': 'Spiritual Bible Chat Support Request',
       },
@@ -1901,7 +1901,7 @@ class _ProfileScreen extends StatelessWidget {
             ),
           _ProfileSettingTile(
             icon: Icons.help_outline,
-            title: 'Need help?',
+            title: 'Need help? Found a bug?',
             subtitle: 'Reach out to our support team.',
             onTap: () => _contactSupport(context),
           ),
