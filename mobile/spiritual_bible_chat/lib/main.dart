@@ -29,6 +29,7 @@ import 'widgets/quick_action_chip.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'services/paywall_service.dart';
+import 'data/daily_verses.dart';
 import 'theme/app_theme.dart';
 
 String describeGoal(SpiritualGoal goal) {
@@ -154,13 +155,16 @@ class SpiritualBibleChatApp extends StatefulWidget {
   State<SpiritualBibleChatApp> createState() => _SpiritualBibleChatAppState();
 }
 
-class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
+class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp>
+    with WidgetsBindingObserver {
   PreferencesService? _preferences;
   OnboardingProfile? _profile;
   StreakState _streak = StreakState.initial();
   bool _isLoading = true;
   PremiumState _premiumState = PremiumState.initial();
   DateTime? _nextReminder;
+  DailyVerse? _dailyVerse;
+  DateTime? _dailyVerseLoadedFor;
   final GlobalKey<_AppShellState> _appShellKey = GlobalKey<_AppShellState>();
   StreamSubscription<String>? _notificationSubscription;
   StreamSubscription<AuthState>? _authSubscription;
@@ -176,6 +180,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _premiumService.configure();
     _premiumListener = () {
       final premium = _premiumService.state.value;
@@ -215,6 +220,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     if (_premiumListener != null) {
       _premiumService.state.removeListener(_premiumListener!);
     }
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -246,6 +252,54 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       await _premiumService.logIn(userId);
     } else {
       await _premiumService.refreshStatus();
+    }
+
+    await _syncDayState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_syncDayState());
+    }
+  }
+
+  Future<void> _syncDayState() async {
+    if (_preferences == null) return;
+    final now = DateTime.now();
+    await _maybeResetStreak(now);
+    final normalized = DateTime(now.year, now.month, now.day);
+    if (_dailyVerseLoadedFor == null || _dailyVerseLoadedFor != normalized) {
+      await _loadDailyVerseFor(now);
+    }
+  }
+
+  Future<void> _loadDailyVerseFor(DateTime date) async {
+    try {
+      final verse = await DailyVerseProvider.verseForDate(date);
+      if (!mounted) return;
+      setState(() {
+        _dailyVerse = verse;
+        _dailyVerseLoadedFor = DateTime(date.year, date.month, date.day);
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load daily verse: $error\n$stackTrace');
+    }
+  }
+
+  Future<void> _maybeResetStreak(DateTime now) async {
+    if (_preferences == null) return;
+    final current = _streak;
+    final last = current.lastCompletedDate;
+    if (last == null) {
+      return;
+    }
+    final today = DateTime(now.year, now.month, now.day);
+    final lastDate = DateTime(last.year, last.month, last.day);
+    final diff = today.difference(lastDate).inDays;
+    if (diff >= 1 && current.currentStreak != 0) {
+      final reset = current.copyWith(currentStreak: 0);
+      await _handleStreakUpdated(reset);
     }
   }
 
@@ -279,6 +333,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
     }
 
     await _premiumService.refreshStatus();
+    await _syncDayState();
   }
 
   Future<void> _handleProfileCompleted(OnboardingProfile profile) async {
@@ -496,6 +551,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
         onShowPaywall: _handlePaywall,
         premium: _premiumState,
         onManageSubscription: _handleManageSubscription,
+        dailyVerse: _dailyVerse,
       );
     }
 
@@ -670,6 +726,7 @@ class _AppShell extends StatefulWidget {
     required this.onShowPaywall,
     required this.premium,
     required this.onManageSubscription,
+    required this.dailyVerse,
   });
 
   final OnboardingProfile profile;
@@ -686,6 +743,7 @@ class _AppShell extends StatefulWidget {
       onShowPaywall;
   final PremiumState premium;
   final Future<void> Function() onManageSubscription;
+  final DailyVerse? dailyVerse;
 
   @override
   State<_AppShell> createState() => _AppShellState();
@@ -854,6 +912,7 @@ class _AppShellState extends State<_AppShell> {
           streak: streak,
           nextReminder: widget.nextReminder,
           onShowPaywall: widget.onShowPaywall,
+          dailyVerse: widget.dailyVerse,
         ),
       ),
       _NavigationDestination(
@@ -935,6 +994,7 @@ class _TodayScreen extends StatelessWidget {
     required this.streak,
     required this.nextReminder,
     required this.onShowPaywall,
+    required this.dailyVerse,
   });
 
   final OnboardingProfile profile;
@@ -947,12 +1007,26 @@ class _TodayScreen extends StatelessWidget {
   final DateTime? nextReminder;
   final Future<void> Function(BuildContext context, String message)
       onShowPaywall;
+  final DailyVerse? dailyVerse;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const verseText = '“Be still, and know that I am God.”';
-    const verseReference = 'Psalm 46:10';
+    final verse = dailyVerse;
+    final fallbackText = 'Be still, and know that I am God.';
+    final rawText = verse?.text.trim();
+    final versePlainText =
+        (rawText == null || rawText.isEmpty) ? fallbackText : rawText;
+    final sanitized = versePlainText
+        .replaceAll('“', '')
+        .replaceAll('”', '')
+        .replaceAll('"', '')
+        .trim();
+    final verseText = '“$sanitized”';
+    final verseReference = (verse?.reference.trim().isNotEmpty ?? false)
+        ? verse!.reference
+        : 'Psalm 46:10';
+    final verseThemes = verse?.themes ?? const <String>[];
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -979,11 +1053,14 @@ class _TodayScreen extends StatelessWidget {
                 _VerseOfTheDayCard(
                   theme: theme,
                   onReflect: () => onReflectPressed(
-                    verseText,
+                    versePlainText,
                     verseReference,
                   ),
                   completed: streak.hasCompletedToday,
                   onMarkComplete: onMarkComplete,
+                  verseText: verseText,
+                  verseReference: verseReference,
+                  themes: verseThemes,
                 ),
                 const SizedBox(height: 24),
                 _QuickActionsSection(
@@ -994,7 +1071,7 @@ class _TodayScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => DevotionalScreen(
                           profile: profile,
-                          verseText: verseText,
+                          verseText: versePlainText,
                           verseReference: verseReference,
                           onPaywall: onShowPaywall,
                         ),
@@ -1129,12 +1206,18 @@ class _VerseOfTheDayCard extends StatelessWidget {
     required this.onReflect,
     required this.completed,
     required this.onMarkComplete,
+    required this.verseText,
+    required this.verseReference,
+    this.themes = const [],
   });
 
   final ThemeData theme;
   final VoidCallback onReflect;
   final bool completed;
   final Future<void> Function() onMarkComplete;
+  final String verseText;
+  final String verseReference;
+  final List<String> themes;
 
   @override
   Widget build(BuildContext context) {
@@ -1153,7 +1236,7 @@ class _VerseOfTheDayCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '“Be still, and know that I am God.”',
+            verseText,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontStyle: FontStyle.italic,
               height: 1.3,
@@ -1161,12 +1244,28 @@ class _VerseOfTheDayCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Psalm 46:10',
+            verseReference,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: AppColors.maatGold,
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (themes.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: themes
+                  .map(
+                    (label) => Chip(
+                      label: Text(label),
+                      backgroundColor: AppColors.onyx.withOpacity(0.45),
+                      labelStyle: theme.textTheme.bodySmall,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
           const SizedBox(height: 18),
           Wrap(
             spacing: 12,
