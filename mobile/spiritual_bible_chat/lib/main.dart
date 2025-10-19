@@ -847,6 +847,26 @@ class _AppShellState extends State<_AppShell> {
     }
   }
 
+  Future<void> _showStreakModeSheet() async {
+    final current = widget.profile.wantsStreaks;
+    final selection = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) => _StreakModeBottomSheet(current: current),
+    );
+    if (selection == null || selection == current) {
+      return;
+    }
+    final updatedProfile = widget.profile.copyWith(wantsStreaks: selection);
+    await widget.onProfileUpdated(updatedProfile);
+    if (!mounted) return;
+    final message = selection
+        ? 'Streak celebrations are back on.'
+        : 'Gentle rhythm activated — streak celebrations hidden.';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _registerActivity() async {
     final current = widget.streak;
     final now = DateTime.now();
@@ -955,6 +975,7 @@ class _AppShellState extends State<_AppShell> {
           onShowPaywall: widget.onShowPaywall,
           premium: widget.premium,
           onManageSubscription: widget.onManageSubscription,
+          onToggleStreakMode: _showStreakModeSheet,
         ),
       ),
     ];
@@ -1921,6 +1942,98 @@ class _ProgressDetailRow extends StatelessWidget {
   }
 }
 
+class _StreakModeBottomSheet extends StatelessWidget {
+  const _StreakModeBottomSheet({required this.current});
+
+  final bool current;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'How should streaks feel?',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Choose how we honor your daily rhythm. You can switch this anytime.',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            _StreakModeTile(
+              value: true,
+              groupValue: current,
+              title: 'Celebrate my streaks',
+              subtitle:
+                  'Show flames, milestones, and celebratory prompts as you stay consistent.',
+            ),
+            _StreakModeTile(
+              value: false,
+              groupValue: current,
+              title: 'Keep it gentle',
+              subtitle:
+                  'Hide streak celebrations and keep the journey soft and private.',
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StreakModeTile extends StatelessWidget {
+  const _StreakModeTile({
+    required this.value,
+    required this.groupValue,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final bool value;
+  final bool groupValue;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return RadioListTile<bool>(
+      value: value,
+      groupValue: groupValue,
+      onChanged: (selection) {
+        Navigator.of(context).pop(selection ?? groupValue);
+      },
+      title: Text(
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: theme.textTheme.bodySmall,
+      ),
+    );
+  }
+}
+
 class _ProfileScreen extends StatelessWidget {
   const _ProfileScreen({
     required this.profile,
@@ -1934,6 +2047,7 @@ class _ProfileScreen extends StatelessWidget {
     required this.onShowPaywall,
     required this.premium,
     required this.onManageSubscription,
+    required this.onToggleStreakMode,
   });
 
   final OnboardingProfile profile;
@@ -1947,6 +2061,7 @@ class _ProfileScreen extends StatelessWidget {
   final Future<void> Function(BuildContext, String) onShowPaywall;
   final PremiumState premium;
   final Future<void> Function() onManageSubscription;
+  final Future<void> Function() onToggleStreakMode;
 
   Future<void> _showLegalDocument(
     BuildContext context,
@@ -2151,6 +2266,7 @@ class _ProfileScreen extends StatelessWidget {
             subtitle: profile.wantsStreaks
                 ? 'Badges and streak celebrations are enabled.'
                 : 'Gentle mode active — no streak pressure.',
+            onTap: onToggleStreakMode,
           ),
           _ProfileSettingTile(
             icon: Icons.workspace_premium_outlined,
