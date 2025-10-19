@@ -84,7 +84,7 @@ class NotificationService {
         'Spiritual Bible Chat',
         '$label is ready for you',
         tzDateTime,
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'reminders',
             'Daily Reminders',
@@ -92,7 +92,7 @@ class NotificationService {
             importance: Importance.high,
             priority: Priority.high,
           ),
-          iOS: const DarwinNotificationDetails(),
+          iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:

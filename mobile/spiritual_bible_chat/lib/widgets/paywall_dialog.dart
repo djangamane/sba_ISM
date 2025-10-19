@@ -52,9 +52,9 @@ class PaywallDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Column(
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 _BenefitRow('Unlimited sacred conversations each day'),
                 SizedBox(height: 10),
                 _BenefitRow('Full devotional library & ritual blueprints'),

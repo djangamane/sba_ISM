@@ -15,7 +15,7 @@ class LegalContent {
 
     final raw = await rootBundle.loadString('assets/privacy_and_term.txt');
     final lower = raw.toLowerCase();
-    final marker = 'terms of service';
+    const marker = 'terms of service';
     final index = lower.indexOf(marker);
 
     String privacy;
@@ -25,7 +25,8 @@ class LegalContent {
       terms = raw.substring(index).trim();
     } else {
       privacy = raw.trim();
-      terms = 'Terms of Service\nComing soon.';
+      const fallback = 'Terms of Service\nComing soon.';
+      terms = fallback;
     }
 
     _privacyCache = privacy;

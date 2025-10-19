@@ -372,6 +372,7 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp>
   Future<void> _handlePaywall(BuildContext context, String message) async {
     if (!context.mounted) return;
     await _paywallService.logPaywallEvent('view', trigger: message);
+    if (!context.mounted) return;
     final previousPremium = _premiumService.state.value.isPremium;
     final upgradeAttempted = await showDialog<bool>(
       context: context,
@@ -546,7 +547,11 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp>
             _profile = null;
             _premiumState = PremiumState.initial();
           });
-          AuthGate.continueAsGuest(context);
+          unawaited(Future<void>.delayed(Duration.zero, () {
+            if (mounted) {
+              AuthGate.continueAsGuest(context);
+            }
+          }));
         },
         onSignInRequested: () => AuthGate.requestSignIn(context),
         onShowPaywall: _handlePaywall,
@@ -1014,7 +1019,7 @@ class _TodayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final verse = dailyVerse;
-    final fallbackText = 'Be still, and know that I am God.';
+    const fallbackText = 'Be still, and know that I am God.';
     final rawText = verse?.text.trim();
     final versePlainText =
         (rawText == null || rawText.isEmpty) ? fallbackText : rawText;
@@ -1405,12 +1410,15 @@ class _ChatEmptyState extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: AppGradients.aurora,
             ),
-            child: const Icon(Icons.auto_awesome,
-                color: AppColors.obsidian, size: 32),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: AppColors.obsidian,
+              size: 32,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -1861,6 +1869,7 @@ class _ProgressDetailRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.trailing,
+    super.key,
   });
 
   final IconData icon;
@@ -2260,7 +2269,11 @@ class _ProfileSettingTile extends StatelessWidget {
 }
 
 class LegalDocumentScreen extends StatelessWidget {
-  const LegalDocumentScreen({required this.title, required this.content});
+  const LegalDocumentScreen({
+    super.key,
+    required this.title,
+    required this.content,
+  });
 
   final String title;
   final String content;

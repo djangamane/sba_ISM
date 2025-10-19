@@ -13,6 +13,13 @@ class PremiumService {
 
   static final PremiumService instance = PremiumService._();
 
+  static const _fallbackStripeKey =
+      String.fromEnvironment('STRIPE_PUBLISHABLE_KEY', defaultValue: '');
+  static const _fallbackMonthlyCheckout =
+      String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY', defaultValue: '');
+  static const _fallbackAnnualCheckout =
+      String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL', defaultValue: '');
+
   final ValueNotifier<PremiumState> state =
       ValueNotifier<PremiumState>(PremiumState.initial());
 
@@ -24,20 +31,17 @@ class PremiumService {
 
   Future<void> configure() async {
     // No-op for web build; Stripe configuration handled via backend.
-    final stripeKey = dotenv.maybeGet('STRIPE_PUBLISHABLE_KEY') ??
-        const String.fromEnvironment('STRIPE_PUBLISHABLE_KEY',
-            defaultValue: '');
+    final stripeKey =
+        dotenv.maybeGet('STRIPE_PUBLISHABLE_KEY') ?? _fallbackStripeKey;
     if (stripeKey.isEmpty) {
       debugPrint(
           'Stripe publishable key missing. Premium checkout will use demo upgrade fallback.');
     }
 
-    final monthlyUrl = dotenv.maybeGet('STRIPE_CHECKOUT_MONTHLY') ??
-        const String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY',
-            defaultValue: '');
-    final annualUrl = dotenv.maybeGet('STRIPE_CHECKOUT_ANNUAL') ??
-        const String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL',
-            defaultValue: '');
+    final monthlyUrl =
+        dotenv.maybeGet('STRIPE_CHECKOUT_MONTHLY') ?? _fallbackMonthlyCheckout;
+    final annualUrl =
+        dotenv.maybeGet('STRIPE_CHECKOUT_ANNUAL') ?? _fallbackAnnualCheckout;
 
     _monthlyCheckoutUri =
         monthlyUrl.isNotEmpty ? Uri.tryParse(monthlyUrl) : null;
