@@ -505,6 +505,35 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp> {
       theme: theme,
       darkTheme: theme,
       themeMode: ThemeMode.dark,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/temple.png',
+                fit: BoxFit.cover,
+                color: AppColors.obsidian.withOpacity(0.4),
+                colorBlendMode: BlendMode.darken,
+              ),
+            ),
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xAA0B0B0F),
+                      Color(0xCC0B0B0F),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (child != null) Positioned.fill(child: child),
+          ],
+        );
+      },
       routes: {
         '/payment/success': (_) => const _CheckoutResultScreen(
               title: 'You’re all set!',

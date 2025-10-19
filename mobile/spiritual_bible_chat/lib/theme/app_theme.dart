@@ -95,7 +95,7 @@ ThemeData buildAppTheme() {
   );
 
   return base.copyWith(
-    scaffoldBackgroundColor: AppColors.obsidian,
+    scaffoldBackgroundColor: Colors.transparent,
     colorScheme: colorScheme,
     textTheme: textTheme,
     appBarTheme: AppBarTheme(
