@@ -22,6 +22,8 @@ import 'utils/api_base.dart';
 import 'utils/reminders.dart';
 import 'exceptions/paywall_required_exception.dart';
 import 'widgets/paywall_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'services/paywall_service.dart';
 
 String describeGoal(SpiritualGoal goal) {
@@ -1720,6 +1722,37 @@ class _ProfileScreen extends StatelessWidget {
   final PremiumState premium;
   final Future<void> Function() onManageSubscription;
 
+  Future<void> _launchPolicy(BuildContext context, String slug) async {
+    final Map<String, Uri> links = {
+      'privacy': Uri.parse('https://spiritualbiblechat.com/privacy'),
+      'terms': Uri.parse('https://spiritualbiblechat.com/terms'),
+    };
+    final uri = links[slug];
+    if (uri == null) return;
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to open ${slug == 'privacy' ? 'privacy policy' : 'terms'} right now.')), 
+      );
+    }
+  }
+
+  Future<void> _contactSupport(BuildContext context) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: 'support@spiritualbiblechat.com',
+      queryParameters: {
+        'subject': 'Spiritual Bible Chat Support Request',
+      },
+    );
+    final launched = await launchUrl(uri);
+    if (!launched) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email client not available on this device.')), 
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -1856,18 +1889,21 @@ class _ProfileScreen extends StatelessWidget {
                     ),
           ),
           const Divider(height: 32),
-          const _ProfileSettingTile(
+          _ProfileSettingTile(
             icon: Icons.description_outlined,
             title: 'Privacy policy',
+            onTap: () => _launchPolicy(context, 'privacy'),
           ),
-          const _ProfileSettingTile(
-            icon: Icons.security_outlined,
-            title: 'Terms of service',
-          ),
-          const _ProfileSettingTile(
+            _ProfileSettingTile(
+              icon: Icons.security_outlined,
+              title: 'Terms of service',
+              onTap: () => _launchPolicy(context, 'terms'),
+            ),
+          _ProfileSettingTile(
             icon: Icons.help_outline,
             title: 'Need help?',
             subtitle: 'Reach out to our support team.',
+            onTap: () => _contactSupport(context),
           ),
           const SizedBox(height: 16),
           if (isSignedIn)
