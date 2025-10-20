@@ -33,72 +33,165 @@ import 'data/daily_verses.dart';
 import 'data/legal_content.dart';
 import 'theme/app_theme.dart';
 
-String describeGoal(SpiritualGoal goal) {
-  switch (goal) {
-    case SpiritualGoal.stressRelief:
-      return 'Soothe stress & breathe easier';
-    case SpiritualGoal.learnBible:
-      return 'Deepen scripture understanding';
-    case SpiritualGoal.manifestation:
-      return 'Imagine with Neville';
-    case SpiritualGoal.dailyInspiration:
-      return 'Daily spark of encouragement';
-    case SpiritualGoal.other:
-      return 'A path uniquely yours';
+String describeIntention(IntentionFocus intention, {String? custom}) {
+  switch (intention) {
+    case IntentionFocus.innerCalm:
+      return 'Return to inner calm';
+    case IntentionFocus.sacredStudy:
+      return 'Drink deeply from sacred wisdom';
+    case IntentionFocus.imaginalCreation:
+      return 'Shape what you’re calling into being';
+    case IntentionFocus.dailySpark:
+      return 'Keep a daily spark of encouragement';
+    case IntentionFocus.other:
+      return (custom?.trim().isNotEmpty ?? false)
+          ? custom!.trim()
+          : 'A path uniquely yours';
   }
 }
 
-String goalHeadline(SpiritualGoal goal) {
-  switch (goal) {
-    case SpiritualGoal.stressRelief:
-      return 'Let’s slow your breath and welcome ease.';
-    case SpiritualGoal.learnBible:
-      return 'Ready to open scripture for fresh revelation?';
-    case SpiritualGoal.manifestation:
-      return 'Let’s imagine boldly with Neville’s lens.';
-    case SpiritualGoal.dailyInspiration:
-      return 'A gentle spark is here to brighten your spirit.';
-    case SpiritualGoal.other:
-      return 'Your path is sacred—I’m honored to walk with you.';
+String intentionHeadline(IntentionFocus intention, {String? custom}) {
+  switch (intention) {
+    case IntentionFocus.innerCalm:
+      return 'Let’s slow your breath and rediscover steadiness.';
+    case IntentionFocus.sacredStudy:
+      return 'We’ll open sacred texts for fresh illumination.';
+    case IntentionFocus.imaginalCreation:
+      return 'We’ll imagine boldly and align with what you desire.';
+    case IntentionFocus.dailySpark:
+      return 'A gentle spark is here to brighten your day.';
+    case IntentionFocus.other:
+      return (custom?.trim().isNotEmpty ?? false)
+          ? 'Let’s honor your unique intention.'
+          : 'Your path is sacred—I’m honored to walk with you.';
   }
 }
 
-String goalSubtext(SpiritualGoal goal) {
-  switch (goal) {
-    case SpiritualGoal.stressRelief:
-      return 'We’ll soften the nervous system with a calm verse and grounding practice.';
-    case SpiritualGoal.learnBible:
-      return 'Today’s guidance unwraps context and meaning woven through beloved passages.';
-    case SpiritualGoal.manifestation:
-      return 'We’ll blend scripture with Neville’s creative prayer to shape what you’re calling in.';
-    case SpiritualGoal.dailyInspiration:
-      return 'A verse, affirmation, and gentle prompt are waiting to lift your day.';
-    case SpiritualGoal.other:
-      return 'Each check-in teaches me your rhythm so the reflections stay lovingly tailored.';
+String intentionSubtext(IntentionFocus intention, {String? custom}) {
+  switch (intention) {
+    case IntentionFocus.innerCalm:
+      return 'I’ll hold space for grounding practices that soften the nervous system.';
+    case IntentionFocus.sacredStudy:
+      return 'We’ll weave scripture, myth, and hidden history into your daily reflections.';
+    case IntentionFocus.imaginalCreation:
+      return 'Expect prompts that help you see, feel, and step into the world you’re conjuring.';
+    case IntentionFocus.dailySpark:
+      return 'Short reflections and affirmations will keep your light kindled each day.';
+    case IntentionFocus.other:
+      return (custom?.trim().isNotEmpty ?? false)
+          ? 'We’ll shape each session around the truth you just named.'
+          : 'Each check-in teaches me your rhythm so the journey stays lovingly tailored.';
   }
 }
 
-String familiarityLabel(NevilleFamiliarity familiarity) {
-  switch (familiarity) {
-    case NevilleFamiliarity.none:
-      return 'New to Neville’s teachings';
-    case NevilleFamiliarity.curious:
-      return 'Exploring Neville’s imagination practice';
-    case NevilleFamiliarity.fan:
-      return 'Devoted to Neville’s wisdom';
-  }
-}
-
-String contentPreferenceLabel(ContentPreference preference) {
-  switch (preference) {
-    case ContentPreference.directScripture:
+String guidanceStyleLabel(GuidanceStyle style) {
+  switch (style) {
+    case GuidanceStyle.scripturePassages:
       return 'Scripture passages';
-    case ContentPreference.practicalAdvice:
+    case GuidanceStyle.practicalWisdom:
       return 'Grounded life wisdom';
-    case ContentPreference.guidedPrayer:
+    case GuidanceStyle.guidedPrayer:
       return 'Guided prayer & meditation';
-    case ContentPreference.affirmations:
+    case GuidanceStyle.affirmationsDeclarations:
       return 'Affirmations & declarations';
+    case GuidanceStyle.sacredHistory:
+      return 'Sacred history & context';
+  }
+}
+
+String innerAnchorLabel(InnerAnchorFocus anchor) {
+  switch (anchor) {
+    case InnerAnchorFocus.bodyBreath:
+      return 'Anchor in body & breath';
+    case InnerAnchorFocus.mindHeart:
+      return 'Mind & heart coherence';
+    case InnerAnchorFocus.ancestorsLineage:
+      return 'Ancestors & lineage';
+    case InnerAnchorFocus.creativityVoice:
+      return 'Creativity & voice';
+    case InnerAnchorFocus.sacredAction:
+      return 'Sacred action in the world';
+  }
+}
+
+String innerAnchorDescription(InnerAnchorFocus anchor) {
+  switch (anchor) {
+    case InnerAnchorFocus.bodyBreath:
+      return 'Breath, embodiment, and somatic rituals lead the way.';
+    case InnerAnchorFocus.mindHeart:
+      return 'We’ll balance thought, emotion, and compassionate self-talk.';
+    case InnerAnchorFocus.ancestorsLineage:
+      return 'Expect reverence for ancestors, lineage, and timeless wisdom.';
+    case InnerAnchorFocus.creativityVoice:
+      return 'We’ll lean on writing, art, and expressive practices to transmute.';
+    case InnerAnchorFocus.sacredAction:
+      return 'Our work will channel insight into liberatory action.';
+  }
+}
+
+String climateFeelingLabel(ClimateFeeling feeling) {
+  switch (feeling) {
+    case ClimateFeeling.grounded:
+      return 'Grounded & awake';
+    case ClimateFeeling.concerned:
+      return 'Concerned about the moment';
+    case ClimateFeeling.overwhelmed:
+      return 'Carrying overwhelm';
+    case ClimateFeeling.grieving:
+      return 'Moving through grief';
+    case ClimateFeeling.hopefulButTired:
+      return 'Hopeful yet tired';
+  }
+}
+
+String justiceTensionLabel(JusticeTension tension) {
+  switch (tension) {
+    case JusticeTension.personal:
+      return 'Personal wellbeing & safety';
+    case JusticeTension.familyCommunity:
+      return 'Family & community spaces';
+    case JusticeTension.workplace:
+      return 'Workplace or industry';
+    case JusticeTension.nationalGlobal:
+      return 'National & global shifts';
+    case JusticeTension.spiritualInstitutions:
+      return 'Spiritual or religious institutions';
+    case JusticeTension.unsure:
+      return 'Still discerning what feels tense';
+  }
+}
+
+String protectionFocusLabel(ProtectionFocus focus, {String? other}) {
+  switch (focus) {
+    case ProtectionFocus.racialTrauma:
+      return 'Racialized trauma';
+    case ProtectionFocus.politicalTurmoil:
+      return 'Political turmoil';
+    case ProtectionFocus.violenceInNews:
+      return 'Violence in the news';
+    case ProtectionFocus.helplessness:
+      return 'Feelings of helplessness';
+    case ProtectionFocus.other:
+      return (other?.trim().isNotEmpty ?? false)
+          ? other!.trim()
+          : 'Something else I want covered';
+  }
+}
+
+String solidarityPracticeLabel(SolidarityPractice practice) {
+  switch (practice) {
+    case SolidarityPractice.communityOrganizing:
+      return 'Community organizing';
+    case SolidarityPractice.prayerOrRitual:
+      return 'Prayer, ritual, ceremony';
+    case SolidarityPractice.teachingEducating:
+      return 'Teaching & educating';
+    case SolidarityPractice.financialSupport:
+      return 'Financial support & mutual aid';
+    case SolidarityPractice.storytellingArt:
+      return 'Storytelling, art, or media';
+    case SolidarityPractice.seekingGuidance:
+      return 'Seeking guidance on where to begin';
   }
 }
 
@@ -904,7 +997,7 @@ class _AppShellState extends State<_AppShell> {
 
   Future<void> _handleReflect(String verseText, String verseReference) async {
     final prompt =
-        'Help me reflect on $verseReference which says: $verseText. Offer Neville Goddard-inspired insight and a practical application.';
+        'Help me reflect on $verseReference which says: $verseText. Offer OMEGA-guided insight rooted in scripture and liberatory wisdom, along with a grounded practice I can embody.';
     setState(() {
       _currentIndex = 1;
     });
@@ -1128,8 +1221,14 @@ class _TodayGreeting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headline = goalHeadline(profile.goal);
-    final subtext = goalSubtext(profile.goal);
+    final headline = intentionHeadline(
+      profile.intention,
+      custom: profile.intentionOther,
+    );
+    final subtext = intentionSubtext(
+      profile.intention,
+      custom: profile.intentionOther,
+    );
     return GlassCard(
       padding: const EdgeInsets.all(26),
       backgroundGradient: AppGradients.aurora,
@@ -1349,12 +1448,22 @@ class _QuickActionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preferenceChips = profile.contentPreferences
-        .map(contentPreferenceLabel)
+    final guidanceChips = profile.guidanceStyles
+        .map(guidanceStyleLabel)
         .map(
           (label) => Chip(
             label: Text(label),
             backgroundColor: AppColors.onyx.withOpacity(0.45),
+            labelStyle: theme.textTheme.bodySmall,
+          ),
+        )
+        .toList();
+    final solidarityChips = profile.solidarityPractices
+        .map(solidarityPracticeLabel)
+        .map(
+          (label) => Chip(
+            label: Text(label),
+            backgroundColor: AppColors.onyx.withOpacity(0.35),
             labelStyle: theme.textTheme.bodySmall,
           ),
         )
@@ -1373,12 +1482,20 @@ class _QuickActionsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          if (preferenceChips.isNotEmpty)
+          if (guidanceChips.isNotEmpty)
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: preferenceChips,
+              children: guidanceChips,
             ),
+          if (solidarityChips.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: solidarityChips,
+            ),
+          ],
           const SizedBox(height: 18),
           Wrap(
             spacing: 12,
@@ -2187,20 +2304,146 @@ class _ProfileScreen extends StatelessWidget {
                   children: [
                     QuickActionChip(
                       icon: Icons.self_improvement_outlined,
-                      label: describeGoal(profile.goal),
+                      label: describeIntention(
+                        profile.intention,
+                        custom: profile.intentionOther,
+                      ),
                     ),
                     QuickActionChip(
-                      icon: Icons.menu_book_outlined,
-                      label: familiarityLabel(profile.familiarity),
+                      icon: Icons.center_focus_strong,
+                      label: innerAnchorLabel(profile.innerAnchor),
                     ),
-                    ...profile.contentPreferences.map(
-                      (pref) => QuickActionChip(
-                        icon: Icons.brightness_5_outlined,
-                        label: contentPreferenceLabel(pref),
-                      ),
+                    QuickActionChip(
+                      icon: Icons.eco_outlined,
+                      label: climateFeelingLabel(profile.climateFeeling),
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  innerAnchorDescription(profile.innerAnchor),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.quartz,
+                  ),
+                ),
+                if (profile.guidanceStyles.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Preferred guidance',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: profile.guidanceStyles
+                        .map(guidanceStyleLabel)
+                        .map(
+                          (label) => Chip(
+                            label: Text(label),
+                            backgroundColor: AppColors.onyx.withOpacity(0.45),
+                            labelStyle: theme.textTheme.bodySmall,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+                if (profile.justiceTensions.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Where tension lives',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: profile.justiceTensions
+                        .map(justiceTensionLabel)
+                        .map(
+                          (label) => Chip(
+                            label: Text(label),
+                            backgroundColor: AppColors.onyx.withOpacity(0.3),
+                            labelStyle: theme.textTheme.bodySmall,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+                if (profile.protectionFocus.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Seeking protection from',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: profile.protectionFocus
+                        .map(
+                          (focus) => protectionFocusLabel(
+                            focus,
+                            other: profile.protectionOther,
+                          ),
+                        )
+                        .map(
+                          (label) => Chip(
+                            label: Text(label),
+                            backgroundColor: AppColors.onyx.withOpacity(0.3),
+                            labelStyle: theme.textTheme.bodySmall,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+                if (profile.solidarityPractices.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Solidarity practice',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: profile.solidarityPractices
+                        .map(solidarityPracticeLabel)
+                        .map(
+                          (label) => Chip(
+                            label: Text(label),
+                            backgroundColor: AppColors.onyx.withOpacity(0.28),
+                            labelStyle: theme.textTheme.bodySmall,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+                if (profile.collectiveTruth.trim().isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Truth I’m holding',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    profile.collectiveTruth.trim(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.quartz,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -51,10 +51,19 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
         'verseText': widget.verseText,
         'verseReference': widget.verseReference,
         'persona': {
-          'goal': widget.profile.goal.name,
-          'familiarity': widget.profile.familiarity.name,
-          'preferences':
-              widget.profile.contentPreferences.map((e) => e.name).toList(),
+          'intention': widget.profile.intention.name,
+          'intentionOther': widget.profile.intentionOther,
+          'guidanceStyles':
+              widget.profile.guidanceStyles.map((e) => e.name).toList(),
+          'climateFeeling': widget.profile.climateFeeling.name,
+          'justiceTensions':
+              widget.profile.justiceTensions.map((e) => e.name).toList(),
+          'protectionFocus':
+              widget.profile.protectionFocus.map((e) => e.name).toList(),
+          'protectionOther': widget.profile.protectionOther,
+          'solidarityPractices':
+              widget.profile.solidarityPractices.map((e) => e.name).toList(),
+          'collectiveTruth': widget.profile.collectiveTruth,
         },
       }),
     );
