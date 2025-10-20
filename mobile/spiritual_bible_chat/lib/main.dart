@@ -1535,9 +1535,9 @@ class _ChatMessage {
 }
 
 class _ChatEmptyState extends StatelessWidget {
-  const _ChatEmptyState({required this.onFocusInput});
+  const _ChatEmptyState({required this.onSelectPrompt});
 
-  final VoidCallback onFocusInput;
+  final ValueChanged<String> onSelectPrompt;
 
   @override
   Widget build(BuildContext context) {
@@ -1574,8 +1574,66 @@ class _ChatEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              _SuggestionChip(
+                label: 'Translate a sacred story into spiritualism',
+                prompt:
+                    'Translate a biblical story into a spiritualist framework that centers agency and imagination.',
+                onSelect: onSelectPrompt,
+              ),
+              _SuggestionChip(
+                label: 'Help me understand manifesting',
+                prompt:
+                    'Break down manifesting from a spiritualist perspective. How do I practice it with integrity?',
+                onSelect: onSelectPrompt,
+              ),
+              _SuggestionChip(
+                label: 'Psalm 82:6 — “Ye are gods”',
+                prompt:
+                    'Explain Psalm 82:6 — “Ye are gods; all of you are children of the Most High.” How should I live that truth today?',
+                onSelect: onSelectPrompt,
+              ),
+              _SuggestionChip(
+                label: 'Cut through the noise of today',
+                prompt:
+                    'Offer a centering reflection that cuts through today’s chaos and reminds me of my creative authority.',
+                onSelect: onSelectPrompt,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+}
+
+class _SuggestionChip extends StatelessWidget {
+  const _SuggestionChip({
+    required this.label,
+    required this.prompt,
+    required this.onSelect,
+  });
+
+  final String label;
+  final String prompt;
+  final ValueChanged<String> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ActionChip(
+      label: Text(label),
+      labelStyle: theme.textTheme.bodySmall?.copyWith(
+        fontWeight: FontWeight.w600,
+        color: AppColors.papyrus,
+      ),
+      backgroundColor: AppColors.onyx.withOpacity(0.45),
+      onPressed: () => onSelect(prompt),
     );
   }
 }
@@ -1597,6 +1655,15 @@ class _ChatScreenState extends State<_ChatScreen> {
   bool _isSending = false;
   String? _threadId;
   final FocusNode _inputFocusNode = FocusNode();
+
+  void _prefillPrompt(String prompt) {
+    _inputController
+      ..text = prompt
+      ..selection = TextSelection.fromPosition(
+        TextPosition(offset: prompt.length),
+      );
+    focusInput();
+  }
 
   @override
   void dispose() {
@@ -1755,7 +1822,7 @@ class _ChatScreenState extends State<_ChatScreen> {
                     : const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 backgroundColor: AppColors.onyx.withOpacity(0.62),
                 child: _messages.isEmpty
-                    ? _ChatEmptyState(onFocusInput: focusInput)
+                    ? _ChatEmptyState(onSelectPrompt: _prefillPrompt)
                     : ListView.builder(
                         controller: _listController,
                         itemCount: _messages.length,
