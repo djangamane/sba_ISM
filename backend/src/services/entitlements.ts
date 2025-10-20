@@ -54,9 +54,9 @@ const countUsageSince = async (
   return count ?? 0;
 };
 
-const startOfToday = () => {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const windowStart = (hours: number) => {
+  const now = Date.now();
+  return new Date(now - hours * 60 * 60 * 1000);
 };
 
 export const ensureChatAccess = async (userId?: string): Promise<AccessResult> => {
@@ -72,7 +72,7 @@ export const ensureChatAccess = async (userId?: string): Promise<AccessResult> =
     return { allowed: true };
   }
 
-  const count = await countUsageSince(userId, 'chat', startOfToday());
+  const count = await countUsageSince(userId, 'chat', windowStart(24));
   if (count >= FREE_CHAT_DAILY_LIMIT) {
     return {
       allowed: false,
@@ -96,7 +96,7 @@ export const ensureDevotionalAccess = async (userId?: string): Promise<AccessRes
     return { allowed: true };
   }
 
-  const count = await countUsageSince(userId, 'devotional', startOfToday());
+  const count = await countUsageSince(userId, 'devotional', windowStart(24));
   if (count >= FREE_DEVOTIONAL_DAILY_LIMIT) {
     return {
       allowed: false,
