@@ -495,6 +495,29 @@ class _SpiritualBibleChatAppState extends State<SpiritualBibleChatApp>
             return false;
           }
         },
+        onSelectLifetime: () async {
+          try {
+            final success = await _premiumService.openLifetimeAccess();
+            if (!success) {
+              throw Exception('Checkout didn’t open. Please try again.');
+            }
+            await _refreshFromSupabase();
+            await _premiumService.refreshStatus();
+            return true;
+          } catch (error) {
+            debugPrint('Lifetime checkout failed: $error');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'We couldn’t open the lifetime checkout. Please try again shortly.',
+                  ),
+                ),
+              );
+            }
+            return false;
+          }
+        },
       ),
     );
     await _refreshFromSupabase();
@@ -2571,7 +2594,7 @@ class _ProfileScreen extends StatelessWidget {
                 premium.isPremium ? 'Premium unlocked' : 'Upgrade to Premium',
             subtitle: premium.isPremium
                 ? 'Thank you for supporting the mission.'
-                : 'Unlock limitless sacred conversations and devotionals.',
+                : 'Monthly \$4.99 • Annual \$49.99 • Limited lifetime \$150 (first 50 seekers).',
             onTap: premium.isPremium
                 ? null
                 : () => onShowPaywall(
@@ -2729,6 +2752,8 @@ class _PremiumSummaryCard extends StatelessWidget {
         return 'Annual Premium';
       case 'premium_monthly':
         return 'Monthly Premium';
+      case 'premium_lifetime':
+        return 'Lifetime Premium';
       default:
         return 'Premium plan';
     }

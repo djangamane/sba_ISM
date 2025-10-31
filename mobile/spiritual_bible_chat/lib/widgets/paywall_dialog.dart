@@ -9,10 +9,12 @@ class PaywallDialog extends StatelessWidget {
   const PaywallDialog({
     super.key,
     required this.onSelectPlan,
+    required this.onSelectLifetime,
     required this.message,
   });
 
   final Future<bool> Function(bool annual) onSelectPlan;
+  final Future<bool> Function() onSelectLifetime;
   final String message;
 
   @override
@@ -64,7 +66,7 @@ class PaywallDialog extends StatelessWidget {
             ),
             const SizedBox(height: 28),
             AnkhButton(
-              label: 'Annual pilgrimage • \$69.99',
+              label: 'Annual pilgrimage • \$49.99',
               icon: Icons.workspace_premium_outlined,
               expand: true,
               onPressed: () async {
@@ -75,11 +77,22 @@ class PaywallDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             GhostButton(
-              label: 'Monthly journey • \$9.99',
+              label: 'Monthly journey • \$4.99',
               icon: Icons.calendar_month_outlined,
               expand: true,
               onPressed: () async {
                 final success = await onSelectPlan(false);
+                if (!context.mounted) return;
+                Navigator.of(context).pop(success);
+              },
+            ),
+            const SizedBox(height: 12),
+            GhostButton(
+              label: 'Limited lifetime access • \$150 (first 50)',
+              icon: Icons.auto_awesome,
+              expand: true,
+              onPressed: () async {
+                final success = await onSelectLifetime();
                 if (!context.mounted) return;
                 Navigator.of(context).pop(success);
               },

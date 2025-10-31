@@ -19,6 +19,10 @@ class PremiumService {
       String.fromEnvironment('STRIPE_CHECKOUT_MONTHLY', defaultValue: '');
   static const _fallbackAnnualCheckout =
       String.fromEnvironment('STRIPE_CHECKOUT_ANNUAL', defaultValue: '');
+  static const _fallbackLifetimeCheckout = String.fromEnvironment(
+    'STRIPE_CHECKOUT_LIFETIME',
+    defaultValue: 'https://buy.stripe.com/bJeaER6xO1w4bUnbSvgYU03',
+  );
 
   final ValueNotifier<PremiumState> state =
       ValueNotifier<PremiumState>(PremiumState.initial());
@@ -28,6 +32,7 @@ class PremiumService {
   final PaywallService _paywallService = PaywallService();
   Uri? _monthlyCheckoutUri;
   Uri? _annualCheckoutUri;
+  Uri? _lifetimeCheckoutUri;
 
   Future<void> configure() async {
     // No-op for web build; Stripe configuration handled via backend.
@@ -42,10 +47,14 @@ class PremiumService {
         dotenv.maybeGet('STRIPE_CHECKOUT_MONTHLY') ?? _fallbackMonthlyCheckout;
     final annualUrl =
         dotenv.maybeGet('STRIPE_CHECKOUT_ANNUAL') ?? _fallbackAnnualCheckout;
+    final lifetimeUrl =
+        dotenv.maybeGet('STRIPE_CHECKOUT_LIFETIME') ?? _fallbackLifetimeCheckout;
 
     _monthlyCheckoutUri =
         monthlyUrl.isNotEmpty ? Uri.tryParse(monthlyUrl) : null;
     _annualCheckoutUri = annualUrl.isNotEmpty ? Uri.tryParse(annualUrl) : null;
+    _lifetimeCheckoutUri =
+        lifetimeUrl.isNotEmpty ? Uri.tryParse(lifetimeUrl) : null;
   }
 
   Future<void> logIn(String? userId) async {
@@ -86,9 +95,12 @@ class PremiumService {
       if (apiCheckoutUrl == null) {
         throw Exception('Checkout URL unavailable.');
       }
-      final mode =
-          kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication;
-      final launched = await launchUrl(apiCheckoutUrl, mode: mode);
+      final launched = await launchUrl(
+        apiCheckoutUrl,
+        mode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
+      );
       if (!launched) {
         throw Exception(
             'Unable to open checkout window. Please disable pop-up blockers and try again.');
@@ -98,10 +110,12 @@ class PremiumService {
       debugPrint('Backend checkout failed: $error');
       final fallbackUrl = annual ? _annualCheckoutUri : _monthlyCheckoutUri;
       if (fallbackUrl != null) {
-        final mode = kIsWeb
-            ? LaunchMode.platformDefault
-            : LaunchMode.externalApplication;
-        final launched = await launchUrl(fallbackUrl, mode: mode);
+        final launched = await launchUrl(
+          fallbackUrl,
+          mode: kIsWeb
+              ? LaunchMode.platformDefault
+              : LaunchMode.externalApplication,
+        );
         if (!launched) {
           throw Exception(
               'Unable to open checkout window. Please disable pop-up blockers and try again.');
@@ -124,5 +138,26 @@ class PremiumService {
       debugPrint('Failed to open billing portal: $error');
       throw Exception('Unable to open billing portal right now.');
     }
+  }
+
+  Future<bool> openLifetimeAccess() async {
+    await configure();
+    final lifetimeUrl = _lifetimeCheckoutUri;
+    if (lifetimeUrl == null) {
+      throw Exception(
+        'Lifetime access checkout is not available right now. Please try again soon.',
+      );
+    }
+    final launched = await launchUrl(
+      lifetimeUrl,
+      mode:
+          kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
+    );
+    if (!launched) {
+      throw Exception(
+        'Unable to open checkout window. Please disable pop-up blockers and try again.',
+      );
+    }
+    return true;
   }
 }
